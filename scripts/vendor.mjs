@@ -29,7 +29,7 @@ for (const key of ['scripts', 'devDependencies', 'packageManager', 'publishConfi
 
 rmSync(out, { recursive: true, force: true })
 cpSync(join(root, 'dist'), join(out, 'dist'), { recursive: true, filter: (src) => !src.endsWith('.map') })
-for (const file of readdirSync(join(out, 'dist')).filter((f) => f.endsWith('.js'))) {
+for (const file of readdirSync(join(out, 'dist'), { recursive: true, encoding: 'utf8' }).filter((f) => f.endsWith('.js'))) {
   const path = join(out, 'dist', file)
   writeFileSync(path, readFileSync(path, 'utf8').replace(/\n\/\/# sourceMappingURL=.*\n?$/, '\n'))
 }

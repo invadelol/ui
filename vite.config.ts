@@ -49,7 +49,9 @@ export default defineConfig({
       formats: ['es'],
       cssFileName: 'style',
     },
-    rollupOptions: { external: ['vue'] },
+    // One file per module, so a host's bundler splits the views across its own chunks (a page that
+    // shows an icon does not load the match detail).
+    rollupOptions: { external: ['vue'], output: { preserveModules: true, preserveModulesRoot: 'src', entryFileNames: '[name].js' } },
     cssCodeSplit: false,
     sourcemap: true,
     reportCompressedSize: false,
