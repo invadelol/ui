@@ -1,0 +1,28 @@
+/* The preview: the page's backdrop and type, a gutter around each story (Histoire keeps <body>
+   transparent, so the backdrop goes on the story). */
+body {
+  font: 400 13px/1.4 var(--font);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+  -webkit-font-smoothing: antialiased;
+}
+.story {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--backdrop);
+}
+.story-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.story h4 {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+}
