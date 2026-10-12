@@ -1797,7 +1797,8 @@ button.iv-sb-link:hover:not(:disabled) {
   display: block;
   width: 100%;
   overflow: visible;
-  touch-action: none;
+  /* A finger scrolls the page up and down over the chart, and reads it sideways. */
+  touch-action: pan-y;
   cursor: crosshair;
 }
 .iv-gch-grid line {
@@ -2101,8 +2102,29 @@ button.iv-sb-link:hover:not(:disabled) {
   font-size: 11px;
   color: var(--text-4);
 }
+.iv-gch-hint-touch {
+  display: none;
+}
+@media (pointer: coarse) {
+  .iv-gch-hint-mouse {
+    display: none;
+  }
+  .iv-gch-hint-touch {
+    display: inline;
+  }
+}
 
 @container md (max-width: 640px) {
+  .iv-gch-head {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .iv-gch-read > * {
+    white-space: nowrap;
+  }
+  .iv-gch-when {
+    min-width: 0;
+  }
   .iv-gch-main {
     grid-template-columns: minmax(0, 1fr);
   }

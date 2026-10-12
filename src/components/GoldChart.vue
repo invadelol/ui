@@ -208,6 +208,16 @@ function leave() {
   cursor.value = null
   hot.value = null
 }
+/** A finger lifting is not the pointer leaving, nor is the page scrolling away under a tap (Safari
+ *  reports both as a leave): after a touch the reading stays until the chart loses focus. */
+let touched = false
+function press(e: PointerEvent) {
+  touched = e.pointerType === 'touch'
+  move(e)
+}
+function lift() {
+  if (!touched) leave()
+}
 function key(e: KeyboardEvent) {
   const k = cursor.value ?? last.value
   if (e.key === 'ArrowLeft') cursor.value = Math.max(0, k - 1)
@@ -305,8 +315,9 @@ const placeOf = (n: number) => t('{n} of {total}', { n, total: players.value.len
         role="img"
         :aria-label="t('{metric} of each player over the game', { metric: t(METRICS.find((m) => m.id === metric)!.label) })"
         @keydown="key"
+        @blur="leave"
       >
-        <svg v-if="geo" :viewBox="`0 0 ${geo.w} ${H}`" :height="H" :class="{ 'has-hot': hot !== null }" @pointermove="move" @pointerleave="leave">
+        <svg v-if="geo" :viewBox="`0 0 ${geo.w} ${H}`" :height="H" :class="{ 'has-hot': hot !== null }" @pointerdown="press" @pointermove="move" @pointerleave="lift">
           <g class="iv-gch-grid">
             <template v-for="tk in geo.yTicks" :key="`y${tk.y}`">
               <line :x1="L" :x2="geo.w - R" :y1="tk.y" :y2="tk.y" />
@@ -420,7 +431,7 @@ const placeOf = (n: number) => t('{n} of {total}', { n, total: players.value.len
             <b>{{ fmt(r.v) }}</b>
           </button>
         </section>
-        <p class="iv-gch-hint">{{ t('Click a player to pin their line') }}</p>
+        <p class="iv-gch-hint"><span class="iv-gch-hint-mouse">{{ t('Click a player to pin their line') }}</span><span class="iv-gch-hint-touch">{{ t('Tap a player to pin their line') }}</span></p>
       </aside>
     </div>
   </div>
