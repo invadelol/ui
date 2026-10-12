@@ -162,7 +162,7 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
   position: relative;
   display: block;
   width: 100%;
-  height: 64px;
+  height: auto;
   padding: 0;
   font: inherit;
   color: var(--text-1);
@@ -244,7 +244,7 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
   grid-template-columns: 44px 42px minmax(88px, 172px) minmax(124px, 196px) minmax(76px, 140px) minmax(max-content, 1fr) 50px 84px 15px;
   align-items: center;
   column-gap: 14px;
-  height: 100%;
+  min-height: 64px;
   padding: 0 14px 0 17px;
 }
 
@@ -470,30 +470,77 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
   .iv-mr-q.brief {
     display: inline;
   }
+  /* Two lines: the champion, the game, the K/D/A and the score; under them the loadout and the
+     items, which a single phone-wide line has no room for. */
   .iv-mr:not(.compact) .iv-mr-grid {
-    grid-template-columns: 40px 38px minmax(0, 1fr) max-content 48px;
-    column-gap: 10px;
-    padding: 0 10px 0 14px;
+    grid-template-columns: 40px max-content minmax(0, 1fr) max-content 48px;
+    grid-template-rows: auto auto;
+    gap: 8px 10px;
+    padding: 10px 10px 10px 14px;
   }
   .iv-mr:not(.compact) .iv-mr-champ {
     width: 40px;
     height: 40px;
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .iv-mr:not(.compact) .iv-mr-game {
+    grid-column: 2 / 4;
+    grid-row: 1;
+  }
+  .iv-mr:not(.compact) .iv-mr-kda {
+    grid-column: 4;
+    grid-row: 1;
+  }
+  .iv-mr:not(.compact) .iv-mr-score {
+    grid-column: 5;
+    grid-row: 1;
   }
   .iv-mr:not(.compact) .iv-mr-load {
-    grid-template-columns: 18px 18px;
-    grid-template-rows: 18px 18px;
+    grid-column: 1 / 3;
+    grid-row: 2;
+    grid-template-columns: repeat(4, 16px);
+    grid-template-rows: 16px;
+    gap: 3px;
+    justify-self: start;
   }
   .iv-mr:not(.compact) .iv-mr-load img {
+    width: 16px;
+    height: 16px;
+  }
+  .iv-mr:not(.compact) .iv-mr-load img.key {
+    width: 17px;
+    height: 17px;
+  }
+  .iv-mr:not(.compact) .iv-mr-load img.sub {
+    width: 12px;
+    height: 12px;
+  }
+  .iv-mr:not(.compact) .iv-mr-items {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    grid-column: 3 / -1;
+    grid-row: 2;
+    justify-self: start;
+    max-width: 100%;
+  }
+  .iv-mr:not(.compact) .iv-mr-well {
+    flex: none;
+  }
+  /* A badge shows whole or not at all: one that has no room wraps out of sight. */
+  .iv-mr:not(.compact) .iv-mr-badges {
+    flex-wrap: wrap;
+    min-width: 0;
+    height: 18px;
+  }
+  .iv-mr-well img,
+  .iv-mr-well i {
     width: 18px;
     height: 18px;
   }
-  .iv-mr:not(.compact) .iv-mr-load img.key {
-    width: 19px;
-    height: 19px;
-  }
-  .iv-mr:not(.compact) .iv-mr-load img.sub {
-    width: 13px;
-    height: 13px;
+  .iv-mr-well .trinket {
+    margin-left: 3px;
   }
   .iv-mr-kda b {
     font-size: 14px;
@@ -509,10 +556,8 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
 
 /* Compact (dashboard and side lists): champion, game, KDA, score; from ~480px the KDA ratio and
    kill participation, from ~600px farm and damage, so the row stays one unit as it widens. */
-.iv-mr.compact {
-  height: 44px;
-}
 .iv-mr.compact .iv-mr-grid {
+  min-height: 44px;
   grid-template-columns: 32px minmax(0, 1fr) auto 72px;
   column-gap: 12px;
   padding: 0 12px 0 14px;

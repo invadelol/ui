@@ -23,6 +23,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
 .iv-mr-skel-list {
   display: grid;
   gap: 4px;
+  container-type: inline-size;
 }
 .iv-mr-skel {
   display: grid;
@@ -34,7 +35,6 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
   background: var(--surface-1);
   border-radius: var(--r-sm);
   box-shadow: var(--hi);
-  container-type: inline-size;
 }
 .iv-mr-skel-champ {
   width: 44px;
@@ -67,6 +67,19 @@ withDefaults(defineProps<{ count?: number }>(), { count: 6 })
   .iv-mr-skel-farm,
   .iv-mr-skel-well {
     display: none;
+  }
+}
+/* A phone's rows are two lines (the loadout and items under the game): as tall, so nothing jumps. */
+@container (max-width: 520px) {
+  .iv-mr-skel {
+    grid-template-columns: 40px minmax(0, 1fr) minmax(0, 1fr) 32px;
+    gap: 10px;
+    height: 92px;
+    padding: 0 10px 0 14px;
+  }
+  .iv-mr-skel-champ {
+    width: 40px;
+    height: 40px;
   }
 }
 </style>
