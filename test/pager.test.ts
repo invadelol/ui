@@ -1,59 +1,42 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { nextPage, pager, PAGE_BURST, PAGE_EVERY_MS } from '../src/logic/pager.ts'
+import { endOfList, PAGE_SIZE } from '../src/logic/pager.ts'
 
-const MIN = 60_000
-
-test('three pages right away, then one every two minutes', () => {
-  let now = 1_000_000
-  const p = pager(() => now)
-  for (let i = 0; i < PAGE_BURST; i++) {
-    assert.equal(p.wait(), 0, `page ${i + 1} is free`)
-    p.take()
-  }
-  assert.equal(p.wait(), 2 * MIN)
-  now += 42_000
-  assert.equal(p.wait(), 78_000, 'the countdown runs')
-  now += 78_000
-  assert.equal(p.wait(), 0)
-  p.take()
-  assert.equal(p.wait(), 2 * MIN, 'one page, then the next two minutes later')
+test('pages of fifteen', () => {
+  assert.equal(PAGE_SIZE, 15)
 })
 
-test('an idle view earns its pages back at the same rate', () => {
-  let now = 0
-  const p = pager(() => now)
-  for (let i = 0; i < 3; i++) p.take()
-  now += 2 * PAGE_EVERY_MS
-  p.take()
-  p.take()
-  assert.equal(p.wait(), PAGE_EVERY_MS, 'two earned, both spent')
-  now += 10 * PAGE_EVERY_MS
-  for (let i = 0; i < PAGE_BURST; i++) {
-    assert.equal(p.wait(), 0)
-    p.take()
+test('stored pages are never paced: every reach of the end asks', () => {
+  const now = 1_000_000
+  const end = endOfList(() => now)
+  for (let i = 0; i < 50; i++) {
+    assert.equal(end.ask(), true, `page ${i + 1} loads right away`)
+    end.clear()
   }
-  assert.ok(p.wait() > 0, 'never more than the burst')
+  assert.equal(end.held(), false)
 })
 
-test("a source's own wait holds the next page as long", () => {
+test('a held page ends the list quietly, then a later reach after the window asks once more', () => {
   let now = 5_000
-  const p = pager(() => now)
-  p.hold(90_000)
-  assert.equal(p.wait(), 90_000)
-  now += 90_000
-  assert.equal(p.wait(), 0)
-  p.take()
-  assert.equal(p.wait(), PAGE_EVERY_MS, 'then the usual pace')
+  const end = endOfList(() => now)
+  end.hold(120_000)
+  assert.equal(end.held(), true, 'the list ends here for now')
+  assert.equal(end.ask(), false, 'reaching the end again too soon asks nothing')
+  now += 119_999
+  assert.equal(end.ask(), false)
+  now += 1
+  assert.equal(end.ask(), true, 'after the window, the next reach asks')
+  end.hold(30_000)
+  assert.equal(end.ask(), false, 'held again: quiet again')
+  now += 30_000
+  assert.equal(end.ask(), true)
+  end.clear()
+  assert.equal(end.held(), false, 'a page loaded: free again')
 })
 
-test('nextPage leaves the state alone when refused (as the server applies it)', () => {
-  let tat = 0
-  for (let i = 0; i < PAGE_BURST; i++) {
-    const r = nextPage(tat, 0)
-    assert.equal(r.wait, 0)
-    tat = r.tat
-  }
-  assert.deepEqual(nextPage(tat, 0), { wait: PAGE_EVERY_MS, tat })
-  assert.deepEqual(nextPage(tat, PAGE_EVERY_MS), { wait: 0, tat: tat + PAGE_EVERY_MS })
+test('a hold without a window asks on the next reach', () => {
+  const end = endOfList(() => 0)
+  end.hold(-5)
+  assert.equal(end.held(), true)
+  assert.equal(end.ask(), true)
 })

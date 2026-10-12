@@ -109,10 +109,13 @@ Inside a component under the plugin:
   `loading`; `error` with a Try again). With
   `loadMore` (and `more`), older games load as the end of the list comes into view.
 - `MoreMatches`: that end of a list, on its own for a host's own list. As it comes into view it
-  calls `load()` (the host appends the next page; it resolves `{ wait }` in ms when its source
-  refused, throws on failure), paced by the paging rule below: skeleton rows while loading, "More
-  games in 1:42" while the rule holds a page back (then it loads by itself if still in view), "That's
-  every tracked game" once `more` is false, an error with Try again. Key it by player.
+  calls `load()` (the host appends the next page and sets `more`), and keeps loading while the end
+  stays in view: stored games load as fast as the list scrolls, with no pacing in the package.
+  Only the server limits pages it must ask Riot for; when it holds them back, `load()` resolves
+  `{ retryAfterMs }` and the list simply ends there, with no countdown or message. A later reach of
+  the end after that window asks once more (no timer, no polling). Skeleton rows while loading,
+  "That's every tracked game" once `more` is false, an error with Try again when `load()` throws.
+  Key it by player.
 - `MatchRow` is its own size container: it drops the matchup, then farm, then items as it narrows,
   and below 520px (a phone, a narrow tile) keeps champion, loadout, short queue name, result,
   duration, K/D/A and score. `compact` is the 44px variant for lists beside other content.
@@ -133,10 +136,11 @@ const rank = rankFromCore(coreRank) // Rank
 const mates = playedWithFromCore(matches, puuid) // PlayedWith
 ```
 
-**Paging rule** (`pager.ts`): older games come in pages of `PAGE_SIZE` (15), `PAGE_BURST` (3) of
-them right away, then one every `PAGE_EVERY_MS` (2 minutes), so scrolling never drains the Riot key.
-`pager()` is one view's count (`MoreMatches` keeps one); `nextPage(tat, now)` is the same rule as one
-number, which a server keeps per player and client (invade.lol does in Redis). Tests: `pnpm test`.
+**Paging** (`pager.ts`): older games come in pages of `PAGE_SIZE` (15). The package never paces
+them: games a host or server stores cost nothing. Riot's budget is the server's to keep (invade.lol:
+a few pages per player and address, then slowly), and it says so by holding a page back.
+`endOfList()` is the end's state: `ask()` is false only between a hold and the end of its window.
+Tests: `pnpm test`.
 
 ### Strings
 
