@@ -90,6 +90,9 @@
 .iv-sb col.iv-sb-c-dmg {
   width: 76px;
 }
+.iv-sb col.iv-sb-c-taken {
+  width: 64px;
+}
 .iv-sb col.iv-sb-c-gold {
   width: 54px;
 }
@@ -356,6 +359,30 @@ button.iv-sb-link:hover:not(:disabled) {
 }
 .iv-sb tr.self .iv-sb-bar em {
   background: var(--brand);
+}
+.iv-sb tr.self .iv-sb-bar.taken em {
+  background: var(--bar);
+}
+/* The damage's share of the team, quiet before the figure. */
+.iv-sb td.num .iv-sb-share {
+  display: inline;
+  margin-right: 5px;
+  font-size: 10.5px;
+}
+/* Damage taken is the first column to go when the table runs out of room: folded to nothing
+   rather than removed, so the rows spanning the table still match its columns. */
+@container sb (max-width: 900px) {
+  .iv-sb col.iv-sb-taken {
+    width: 0;
+  }
+  .iv-sb :is(th, td).iv-sb-taken {
+    padding: 0;
+    overflow: hidden;
+    font-size: 0;
+  }
+  .iv-sb td.iv-sb-taken > * {
+    display: none;
+  }
 }
 .iv-sb-items {
   display: inline-flex;

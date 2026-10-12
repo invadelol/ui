@@ -31,6 +31,13 @@ const { champIcon, champName, itemIcon, itemName, runeIcon, runeName, spellIcon,
 const viewer = computed(() => props.detail.players.find((p) => p.puuid === props.puuid))
 const teams = computed(() => teamsOf(props.detail, viewer.value))
 const maxDamage = computed(() => Math.max(1, ...props.detail.players.map((p) => p.damage)))
+const maxTaken = computed(() => Math.max(1, ...props.detail.players.map((p) => p.damageTaken)))
+const minutes = computed(() => Math.max(1, props.detail.duration / 60))
+/** The damage's physical / magic / true split, read on hover. */
+const damageTitle = (p: PlayerView) => {
+  const of = (n: number) => pct(n / Math.max(1, p.damage))
+  return `${num(p.damage)} · ${t('{share} of the team', { share: pct(p.damageShare) })} · ${t('{physical} physical · {magic} magic · {true} true', { physical: of(p.physical), magic: of(p.magic), true: of(p.trueDamage) })}`
+}
 const arena = computed(() => props.detail.players.some((p) => p.placement > 0))
 
 /** Objectives with their count; a count the source does not keep (grubs) is left out. */
@@ -76,6 +83,7 @@ const target = (p: PlayerView): LinkTarget | null =>
         <col class="iv-sb-c-name" />
         <col class="iv-sb-c-kda" />
         <col class="iv-sb-c-dmg" />
+        <col class="iv-sb-c-taken iv-sb-taken" />
         <col class="iv-sb-c-gold" />
         <col class="iv-sb-c-cs" />
         <col class="iv-sb-c-vis" />
@@ -88,6 +96,7 @@ const target = (p: PlayerView): LinkTarget | null =>
           <th colspan="2">{{ t('Player') }}</th>
           <th class="num">{{ t('KDA') }}</th>
           <th class="num">{{ t('Damage') }}</th>
+          <th class="num iv-sb-taken">{{ t('Taken') }}</th>
           <th class="num">{{ t('Gold') }}</th>
           <th class="num">{{ t('CS') }}</th>
           <th class="num iv-sb-vis">{{ t('Vision') }}</th>
@@ -98,7 +107,7 @@ const target = (p: PlayerView): LinkTarget | null =>
       </thead>
       <tbody v-for="{ team, players, placement } in teams" :key="team.teamId" :class="team.win ? 'won' : 'lost'">
         <tr class="iv-sb-team">
-          <td colspan="10">
+          <td colspan="11">
             <div class="iv-sb-team-line">
               <b class="iv-sb-res" :class="detail.remake ? '' : team.win ? 'win' : 'loss'">{{ result(team, placement) }}</b>
               <span v-if="sideName(team.teamId)" class="iv-sb-side">{{ sideName(team.teamId) }}</span>
@@ -152,12 +161,17 @@ const target = (p: PlayerView): LinkTarget | null =>
               <b>{{ p.kills }}<i>/</i>{{ p.deaths }}<i>/</i>{{ p.assists }}</b>
               <small>{{ kdaRatio(p.kills, p.deaths, p.assists) }} · {{ pct(p.kp) }} {{ t('KP') }}</small>
             </td>
-            <td class="num iv-sb-dmg" :title="`${num(p.damage)} · ${t('{share} of the team', { share: pct(p.damageShare) })}`">
-              <b>{{ compact(p.damage) }}</b>
+            <td class="num iv-sb-dmg" :title="damageTitle(p)">
+              <b><small class="iv-sb-share">{{ pct(p.damageShare) }}</small>{{ compact(p.damage) }}</b>
               <i class="iv-sb-bar"><em :style="{ width: `${(p.damage / maxDamage) * 100}%` }" /></i>
             </td>
-            <td class="num" :title="t('{share} of the team', { share: pct(p.goldShare) })">
+            <td class="num iv-sb-dmg iv-sb-taken" :title="num(p.damageTaken)">
+              <b>{{ compact(p.damageTaken) }}</b>
+              <i class="iv-sb-bar taken"><em :style="{ width: `${(p.damageTaken / maxTaken) * 100}%` }" /></i>
+            </td>
+            <td class="num" :title="`${t('{share} of the team', { share: pct(p.goldShare) })} · ${t('Gold per minute')}: ${num(p.gold / minutes)}`">
               <b>{{ compact(p.gold) }}</b>
+              <small>{{ num(p.gold / minutes) }}</small>
             </td>
             <td class="num">
               <b>{{ p.cs }}</b>
@@ -165,6 +179,7 @@ const target = (p: PlayerView): LinkTarget | null =>
             </td>
             <td class="num iv-sb-vis" :title="t('{placed} placed · {killed} destroyed · {control} control wards', { placed: p.wardsPlaced, killed: p.wardsKilled, control: p.controlWards })">
               <b>{{ p.vision }}</b>
+              <small>{{ p.wardsPlaced }} / {{ p.wardsKilled }}</small>
             </td>
             <td>
               <span class="iv-sb-items">
@@ -197,7 +212,7 @@ const target = (p: PlayerView): LinkTarget | null =>
             </td>
           </tr>
           <tr v-if="open === p.participantId" class="iv-sb-detail">
-            <td :id="`${uid}-${p.participantId}`" colspan="10">
+            <td :id="`${uid}-${p.participantId}`" colspan="11">
               <div class="iv-sb-detail-in"><PlayerDetail :detail="detail" :player="p" :me="viewer" /></div>
             </td>
           </tr>
