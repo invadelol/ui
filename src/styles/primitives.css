@@ -77,6 +77,22 @@
   background: rgb(var(--loss-rgb) / 0.1);
 }
 
+/* Touch: a control is a fingertip tall. The desktop app (a mouse) keeps the sizes above. */
+@media (pointer: coarse) {
+  .iv-btn {
+    height: 40px;
+  }
+  .iv-btn.icon-only {
+    width: 40px;
+  }
+  .iv-btn.sm {
+    height: 34px;
+  }
+  .iv-btn.sm.icon-only {
+    width: 34px;
+  }
+}
+
 /* Segmented control (filters: queue, role, sort): an inset well; the chosen segment is a raised
    key, lit from above. No coloured edge. `.sm` for panel heads and chart heads. */
 .iv-seg {
@@ -128,6 +144,15 @@
   font-size: 12px;
 }
 
+@media (pointer: coarse) {
+  .iv-seg > button {
+    height: 34px;
+  }
+  .iv-seg.sm > button {
+    height: 30px;
+  }
+}
+
 /* Tabs: switching views inside a page. A straight violet underline on the active tab. */
 .iv-tabs {
   display: flex;
@@ -171,6 +196,12 @@
 .iv-tabs small {
   font-size: 11.5px;
   color: var(--text-4);
+}
+@media (pointer: coarse) {
+  .iv-tabs > button,
+  .iv-tabs > a {
+    height: 42px;
+  }
 }
 
 /* Panel: one topic. Tone, a lit face and a faint rim; no outline, no nesting. */
