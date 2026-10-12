@@ -5,12 +5,16 @@
  * desktop app. Nothing is estimated: a value the stored match does not carry is `null` (or left
  * out), and views hide its row.
  */
+import { PINGS, SCORE_CATEGORIES } from './detail.js'
 import { rankValue } from './labels.js'
-import type { Badge, ChampRow, ChampTotals, Kill, LpPoint, Mastery, MatchDetail, MatchSummary, Mate, Objective, PlayedWith, PlayerView, Position, ProfileView, Rank, TeamView, TimelineView } from './types.js'
+import type { Badge, ChampRow, ChampTotals, Kill, LpPoint, Mastery, MatchDetail, MatchSummary, Mate, Objective, Ping, PlayedWith, PlayerView, Position, ProfileView, Rank, ScoreCategory, TeamView, TimelineView } from './types.js'
 
 // --- invade.lol's shapes (inertia/lib/types.ts), the fields read here --------------------------------
 
-export interface CoreParticipant {
+/** Pings per kind (`allInPings`…), on Riot's games. */
+export type CorePings = Partial<Record<`${Ping}Pings`, number>>
+
+export interface CoreParticipant extends CorePings {
   puuid: string
   gameName: string
   tagLine: string
@@ -41,6 +45,8 @@ export interface CoreParticipant {
   goldEarned: number
   wardsPlaced: number
   wardsKilled: number
+  /** Jungle monsters among `cs`. */
+  neutralMinionsKilled: number
   /** The icon the player had in this game, when stored. */
   profileIconId?: number
 }
@@ -55,7 +61,16 @@ export interface CoreTimelineEntry {
   goldTotal: number
   cs: number
   jungleCs: number
-  perks?: { primaryStyle: number; secondaryStyle: number; keystone: number; runes: number[] }
+  perks?: {
+    primaryStyle: number
+    secondaryStyle: number
+    keystone: number
+    runes: number[]
+    /** 0 when not recorded (games from the desktop app). */
+    statPerks?: { offense: number; flex: number; defense: number }
+  }
+  /** Skill slots (1 Q … 4 R) in the order they were levelled, repeated on each frame. */
+  skillOrder?: number[]
 }
 
 export interface CoreEvent {
@@ -98,6 +113,8 @@ export interface CoreMatch {
   participants: CoreParticipant[]
   timeline?: CoreTimelineEntry[]
   events?: CoreEvent[]
+  /** What a game from the desktop app could not report (`pings: false`: its zeros are not counts). */
+  completeness?: { pings: boolean } | null
 }
 
 export interface CoreRank {
@@ -139,8 +156,11 @@ export interface FromCoreOptions {
   scores?: Record<string, number>
   /** Earned badges per puuid (invade.lol's `earnedBadges` keys); unknown keys are dropped. */
   badges?: Record<string, readonly string[]>
+  /** What each score is made of (invade.lol's `scoreLobby`): 0‥100 per category, and its weight in %. */
+  parts?: Record<string, { categories: Record<ScoreCategory, number>; weights: Record<ScoreCategory, number> }>
 }
 
+const PING_KINDS = Object.keys(PINGS) as Ping[]
 const POSITION: Record<string, Position> = { TOP: 'TOP', JUNGLE: 'JUNGLE', MIDDLE: 'MID', BOTTOM: 'ADC', UTILITY: 'SUPPORT' }
 const BADGE_KEYS = new Set<string>(['carry_damage', 'tank', 'vision', 'cc', 'objectives', 'first_blood', 'triple', 'quadra', 'penta', 'deathless', 'lane_won'])
 /** Below five minutes a game is a remake. */
@@ -172,6 +192,8 @@ export function fromCoreMatch(match: CoreMatch, opts: FromCoreOptions = {}): Mat
   const hasEvents = events.length > 0
   const minutes = Math.max(match.duration / 60, 1)
   const laned = list.some((p) => p.position in POSITION)
+  // A desktop game's pings are zeros it could not read, not counts.
+  const pinged = match.completeness?.pings !== false && list.some((p) => p.allInPings !== undefined)
 
   // Participant ids come from the timeline (Riot's ids, the ones events use); without one, the
   // stored order stands in.
@@ -226,6 +248,7 @@ export function fromCoreMatch(match: CoreMatch, opts: FromCoreOptions = {}): Mat
     const j = opp ? list.indexOf(opp) : -1
     const lead15 = (rows: number[][]) => (at15 !== undefined && j >= 0 ? rows[i][at15] - rows[j][at15] : null)
     const first = frames.find((f) => f.puuid === p.puuid && f.perks?.keystone)?.perks
+    const shards = first?.statPerks ? [first.statPerks.offense, first.statPerks.flex, first.statPerks.defense] : []
     const runes = first ? first.runes.filter((r) => r > 0) : []
     const keystone = first?.keystone || p.perks.keystone
     const perks = runes.length ? (runes[0] === keystone ? runes : [keystone, ...runes]).slice(0, 6) : keystone ? [keystone] : []
@@ -235,6 +258,7 @@ export function fromCoreMatch(match: CoreMatch, opts: FromCoreOptions = {}): Mat
     for (const b of opts.badges?.[p.puuid] ?? []) if (BADGE_KEYS.has(b) && !badges.includes(b as Badge)) badges.push(b as Badge)
     if (hasEvents && firstBloodBy === pid(p) && !badges.includes('first_blood')) badges.push('first_blood')
     const score = remake ? undefined : scores[p.puuid]
+    const parts = score === undefined ? undefined : opts.parts?.[p.puuid]
     return {
       participantId: pid(p),
       teamId: p.teamId,
@@ -253,6 +277,7 @@ export function fromCoreMatch(match: CoreMatch, opts: FromCoreOptions = {}): Mat
       assists: p.assists,
       kp: teamKills.get(p.teamId) ? (p.kills + p.assists) / teamKills.get(p.teamId)! : 0,
       cs: p.cs,
+      jungleCs: p.neutralMinionsKilled,
       csMin: p.cs / minutes,
       gold: p.goldEarned,
       goldShare: teamGold.get(p.teamId) ? p.goldEarned / teamGold.get(p.teamId)! : 0,
@@ -284,10 +309,14 @@ export function fromCoreMatch(match: CoreMatch, opts: FromCoreOptions = {}): Mat
       xp15: lead15(xp),
       cs15: lead15(cs),
       score: score === undefined ? null : score / 10,
+      parts: parts ? SCORE_CATEGORIES.filter((key) => parts.weights[key] > 0).map((key) => ({ key, value: parts.categories[key], weight: parts.weights[key] })) : [],
       rank: score === undefined ? 0 : ranked.indexOf(p) + 1,
       badges,
+      skills: frames.find((f) => f.puuid === p.puuid && f.skillOrder?.length)?.skillOrder ?? [],
       augments: [],
       placement: 0,
+      ...(shards.every(Boolean) ? { shards } : {}),
+      ...(pinged ? { pings: Object.fromEntries(PING_KINDS.map((k) => [k, p[`${k}Pings`] ?? 0])) as Record<Ping, number> } : {}),
     }
   })
   const byPid = new Map(players.map((p) => [p.participantId, p]))

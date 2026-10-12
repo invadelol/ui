@@ -48,7 +48,7 @@ defineEmits<{ toggle: [] }>()
 const ui = useInvadeUi()
 const { t } = ui
 const { compact: compactNum, date, kdaRatio, mmss, num, ordinal, pct, score100, signedLp } = useFormat()
-const { champIcon, champName, itemIcon, runeIcon, runeName, spellIcon, spellName, styleIcon, styleName } = useNames()
+const { champIcon, champName, itemIcon, itemName, runeIcon, runeName, spellIcon, spellName, styleIcon, styleName } = useNames()
 
 const g = computed(() => props.game)
 const result = computed(() => (g.value.remake ? 'remake' : g.value.win ? 'win' : 'loss'))
@@ -111,7 +111,7 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
           <span class="iv-mr-items" :class="{ tagged: shownBadges.length }">
             <span class="iv-mr-well">
               <template v-for="(id, i) in g.items.slice(0, 7)" :key="i">
-                <img v-if="id" :src="itemIcon(id)" alt="" :class="{ trinket: i === 6 }" @error="hideBroken" />
+                <img v-if="id" :src="itemIcon(id)" :alt="itemName(id)" :title="itemName(id)" :class="{ trinket: i === 6 }" @error="hideBroken" />
                 <i v-else :class="{ trinket: i === 6 }" />
               </template>
             </span>

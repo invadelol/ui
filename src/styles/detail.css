@@ -1,6 +1,6 @@
 /*
- * Match detail: the frame (md-), Scoreboard (sb-), the player picker (pp-), Build (bd-), Timeline
- * (evt-), Gold (gch-) and Breakdown (brk-). Ally / enemy colours are read from the viewed player's
+ * Match detail: the frame (md-), Scoreboard (sb-) and the player opened in it (pd-), the player
+ * picker (pp-), Build (bd-), Timeline (evt-), Gold (gch-) and Breakdown (brk-). Ally / enemy colours are read from the viewed player's
  * side: `.ally` blue, `.enemy` red.
  */
 .iv-md :is(.ally) {
@@ -78,7 +78,7 @@
 .iv-sb {
   /* The fixed columns take ~630px at their narrowest: below 760px the table scrolls rather than
      squeeze the names to an initial. */
-  min-width: 760px;
+  min-width: 790px;
   table-layout: fixed;
 }
 .iv-sb col.iv-sb-c-who {
@@ -89,6 +89,9 @@
 }
 .iv-sb col.iv-sb-c-dmg {
   width: 76px;
+}
+.iv-sb col.iv-sb-c-taken {
+  width: 64px;
 }
 .iv-sb col.iv-sb-c-gold {
   width: 54px;
@@ -104,6 +107,9 @@
 }
 .iv-sb col.iv-sb-c-score {
   width: 112px;
+}
+.iv-sb col.iv-sb-c-more {
+  width: 30px;
 }
 .iv-sb th,
 .iv-sb td {
@@ -354,6 +360,30 @@ button.iv-sb-link:hover:not(:disabled) {
 .iv-sb tr.self .iv-sb-bar em {
   background: var(--brand);
 }
+.iv-sb tr.self .iv-sb-bar.taken em {
+  background: var(--bar);
+}
+/* The damage's share of the team, quiet before the figure. */
+.iv-sb td.num .iv-sb-share {
+  display: inline;
+  margin-right: 5px;
+  font-size: 10.5px;
+}
+/* Damage taken is the first column to go when the table runs out of room: folded to nothing
+   rather than removed, so the rows spanning the table still match its columns. */
+@container sb (max-width: 900px) {
+  .iv-sb col.iv-sb-taken {
+    width: 0;
+  }
+  .iv-sb :is(th, td).iv-sb-taken {
+    padding: 0;
+    overflow: hidden;
+    font-size: 0;
+  }
+  .iv-sb td.iv-sb-taken > * {
+    display: none;
+  }
+}
 .iv-sb-items {
   display: inline-flex;
   align-items: center;
@@ -423,6 +453,471 @@ button.iv-sb-link:hover:not(:disabled) {
     width: 18px;
     height: 18px;
   }
+}
+
+/* A row opens its player's detail under it: the two read as one block. */
+.iv-sb tr.iv-sb-row {
+  cursor: pointer;
+}
+.iv-sb tr.open,
+.iv-sb tr.iv-sb-detail,
+.iv-table.iv-sb tbody tr.iv-sb-detail:hover {
+  background: var(--surface-2);
+}
+.iv-sb tr.open td {
+  border-bottom-color: transparent;
+}
+.iv-sb td.iv-sb-more {
+  padding: 0 4px 0 0;
+  text-align: right;
+}
+.iv-sb-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: var(--text-4);
+  background: none;
+  border: 0;
+  border-radius: var(--r-xs);
+  cursor: pointer;
+  transition: color var(--t-fast), transform var(--t-fast) var(--ease);
+}
+.iv-sb-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+.iv-sb tr.iv-sb-row:hover .iv-sb-toggle {
+  color: var(--text-2);
+}
+.iv-sb-toggle[aria-expanded='true'] {
+  color: var(--text-2);
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .iv-sb-toggle {
+    transition: none;
+  }
+}
+.iv-sb tr.iv-sb-detail td {
+  height: auto;
+  padding: 0;
+}
+/* As wide as the visible strip, however far the table is scrolled. */
+.iv-sb-detail-in {
+  position: sticky;
+  left: 0;
+  width: 100cqw;
+}
+
+/* --- Player detail (opened in the scoreboard) ------------------------------------------------------- */
+.iv-pd {
+  container: pd / inline-size;
+  padding: 14px 16px 20px;
+  cursor: auto;
+}
+.iv-pd .ally {
+  --side: var(--win);
+}
+.iv-pd .enemy {
+  --side: var(--loss);
+}
+.iv-pd-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.iv-pd-col {
+  min-width: 0;
+  padding: 0 28px;
+  border-left: 1px solid var(--line);
+}
+.iv-pd-col:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+.iv-pd-col:last-child {
+  padding-right: 0;
+}
+/* Two columns: the lane goes under both. One: everything stacked. */
+@container pd (max-width: 860px) {
+  .iv-pd-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .iv-pd-col:nth-child(2) {
+    padding-right: 0;
+  }
+  .iv-pd-col:nth-child(3) {
+    grid-column: 1 / -1;
+    margin-top: 20px;
+    padding: 18px 0 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+}
+/* Under both, the lane reads in two halves: the matchup, then its checkpoints and pings. */
+@container pd (min-width: 561px) and (max-width: 860px) {
+  .iv-pd-col:nth-child(3) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 28px;
+  }
+  .iv-pd-after > :first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+@container pd (max-width: 560px) {
+  .iv-pd-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .iv-pd-col:nth-child(n) {
+    margin-top: 20px;
+    padding: 18px 0 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+  .iv-pd-col:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+.iv-pd h4.iv-label {
+  margin-bottom: 8px;
+}
+.iv-pd-block {
+  margin-top: 18px;
+}
+.iv-pd-rule {
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+/* Build */
+.iv-pd-items {
+  display: inline-flex;
+  gap: 3px;
+  padding: 4px;
+  background: var(--well);
+  border-radius: var(--r-sm);
+}
+.iv-pd-items img,
+.iv-pd-items i {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-xs);
+}
+.iv-pd-items i {
+  background: var(--glint);
+}
+.iv-pd-items .trinket {
+  margin-left: 5px;
+}
+.iv-pd-kit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin-top: 16px;
+}
+.iv-pd-spells {
+  display: flex;
+  gap: 3px;
+}
+.iv-pd-spells img {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-xs);
+}
+.iv-pd-prio {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.iv-pd-prio b,
+.iv-pd-skills i.on {
+  font-weight: 650;
+  color: var(--text-1);
+  background: var(--surface-4);
+}
+.iv-pd-prio b {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+  border-radius: var(--r-xs);
+}
+.iv-pd-prio i {
+  font-size: 11px;
+  font-style: normal;
+  color: var(--text-4);
+}
+.iv-pd-skills {
+  display: grid;
+  gap: 3px;
+  max-width: 420px;
+  font-variant-numeric: tabular-nums;
+}
+.iv-pd-skill-row {
+  display: grid;
+  grid-template-columns: 14px repeat(18, minmax(0, 1fr));
+  align-items: center;
+  gap: 2px;
+}
+.iv-pd-skill-row span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+.iv-pd-skills i {
+  display: grid;
+  place-items: center;
+  height: 17px;
+  font-size: 10px;
+  font-style: normal;
+  background: var(--well);
+  border-radius: 2px;
+}
+.iv-pd-skills i.on.r {
+  color: var(--brand-hi);
+  background: var(--brand-a16);
+}
+.iv-pd-runes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px 20px;
+}
+.iv-pd-tree {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+.iv-pd-tree img {
+  width: 16px;
+  height: 16px;
+}
+.iv-pd-rune {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.iv-pd-rune img {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--well);
+}
+.iv-pd-rune.key {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.iv-pd-rune.key img {
+  width: 32px;
+  height: 32px;
+}
+.iv-pd-shards {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+.iv-pd-shards img {
+  width: 18px;
+  height: 18px;
+  padding: 1px;
+  border-radius: 50%;
+  background: var(--well);
+}
+
+/* Score and numbers */
+.iv-pd-score {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.iv-pd-score > span {
+  display: grid;
+  gap: 2px;
+}
+.iv-pd-score b {
+  font-size: 13px;
+  font-weight: 600;
+}
+.iv-pd-score small {
+  font-size: 12px;
+  color: var(--text-3);
+}
+.iv-pd-parts {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-pd-parts li {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr) 26px 38px;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+.iv-pd-parts b {
+  font-size: 12px;
+  font-weight: 650;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+.iv-pd-parts small {
+  font-size: 11px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-4);
+}
+.iv-pd-meter {
+  display: block;
+  height: 3px;
+  overflow: hidden;
+  background: var(--track);
+  border-radius: 2px;
+}
+.iv-pd-meter em {
+  display: block;
+  height: 100%;
+  background: var(--bar);
+  border-radius: 2px;
+}
+.iv-pd-stats {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-pd-stats li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 12.5px;
+}
+.iv-pd-stats li > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-2);
+}
+.iv-pd-stats b {
+  font-size: 12.5px;
+  font-weight: 550;
+  font-variant-numeric: tabular-nums;
+}
+.iv-pd-stats .iv-pd-meter {
+  grid-column: 1 / -1;
+}
+.iv-pd-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+.iv-pd-dot.d1 {
+  background: var(--text-2);
+}
+.iv-pd-dot.d2 {
+  background: var(--text-3);
+}
+.iv-pd-dot.d3 {
+  background: var(--text-4);
+}
+
+/* Lane */
+.iv-pd-vs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.iv-pd-who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.iv-pd-who.right {
+  justify-content: flex-end;
+  text-align: right;
+}
+.iv-pd-who > span {
+  display: grid;
+  min-width: 0;
+}
+.iv-pd-who img {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-sm);
+  box-shadow: var(--portrait-sm);
+}
+.iv-pd-who b {
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.iv-pd-who small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-3);
+}
+.iv-pd-who.right small {
+  justify-content: flex-end;
+}
+.iv-pd-check {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(3, auto);
+  gap: 6px 24px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.iv-pd-check span {
+  font-weight: 500;
+  color: var(--text-3);
+}
+.iv-pd-check b {
+  font-size: 12px;
+  font-weight: 600;
+}
+.iv-pd-check :nth-child(4n + 1) {
+  font-weight: 500;
+  text-align: left;
+  color: var(--text-2);
 }
 
 /* --- Player picker (timeline, build) ---------------------------------------------------------------- */
@@ -539,6 +1034,13 @@ button.iv-sb-link:hover:not(:disabled) {
 .iv-bd-tree.second .iv-bd-slot img {
   width: 22px;
   height: 22px;
+}
+.iv-bd-tree.second .iv-bd-shards img {
+  width: 18px;
+  height: 18px;
+  padding: 1px;
+  border-radius: 50%;
+  background: var(--well);
 }
 .iv-bd-slot img.off {
   opacity: 0.22;

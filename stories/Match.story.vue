@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MatchDetailPanel, MatchRow, MatchRowSkeleton } from '../src'
+import { MatchDetailPanel, MatchRow, MatchRowSkeleton, PlayerDetail } from '../src'
 import { fromCoreMatch, type MatchSummary } from '../src/logic'
 import { coreMatchOf } from './core'
 import { detailOf, games } from './fixtures'
@@ -8,7 +8,8 @@ const remake: MatchSummary = { ...games[1], remake: true, win: false, duration: 
 const arena: MatchSummary = { ...games[3], queueId: 1700, placement: 2 }
 const detail = detailOf(games[0])
 const core = coreMatchOf(detail)
-const fromCore = fromCoreMatch(core.match, { scores: core.scores })
+const fromCore = fromCoreMatch(core.match, core.options)
+const self = (d: typeof detail) => d.players.find((p) => p.puuid === 'mock-self')!
 </script>
 
 <template>
@@ -41,6 +42,16 @@ const fromCore = fromCoreMatch(core.match, { scores: core.scores })
     <Variant title="Detail (invade.lol game, fromCoreMatch)">
       <div class="story">
         <MatchDetailPanel :detail="fromCore" puuid="mock-self" :match-id="core.match.matchId" />
+      </div>
+    </Variant>
+
+    <Variant title="Player detail (a scoreboard row opened)">
+      <div class="story">
+        <h4>invade.lol game: shards and pings</h4>
+        <div class="iv-md"><PlayerDetail :detail="fromCore" :player="self(fromCore)" :me="self(fromCore)" /></div>
+        <h4>Desktop app game, narrower</h4>
+        <div class="iv-md" style="max-width: 720px"><PlayerDetail :detail="detail" :player="detail.players[7]" :me="self(detail)" /></div>
+        <div class="iv-md" style="max-width: 390px"><PlayerDetail :detail="detail" :player="self(detail)" :me="self(detail)" /></div>
       </div>
     </Variant>
 
