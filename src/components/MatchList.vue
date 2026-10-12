@@ -2,8 +2,7 @@
 import { computed, nextTick, shallowRef, useSlots, watch } from 'vue'
 import { useFormat, useInvadeUi, useNames } from '../context'
 import { dayKey } from '../logic/format'
-import { tk } from '../logic/i18n'
-import { count, positionName, QUEUE_FILTERS } from '../logic/labels'
+import { count, positionName, QUEUE_FILTERS, QUEUE_SHORT } from '../logic/labels'
 import type { MatchSummary, Position, QueueFilter, ScoreRow } from '../logic/types'
 import Icon from './Icon.vue'
 import MatchRow from './MatchRow.vue'
@@ -47,8 +46,6 @@ const champion = defineModel<number>('champion', { required: true })
 const role = defineModel<Position | ''>('role', { required: true })
 const order = defineModel<'recent' | 'champion'>('order', { required: true })
 
-/** Shorter labels than the shared filter list: the bar says "queue" by itself. */
-const SHORT: Partial<Record<QueueFilter, string>> = { all: tk('All'), solo: tk('Solo/Duo'), flex: tk('Flex') }
 const queueOf = (id: QueueFilter) => QUEUE_FILTERS.find((f) => f.id === id)?.queues as readonly number[] | null | undefined
 const inQueue = (g: MatchSummary, id: QueueFilter) => {
   const q = queueOf(id)
@@ -56,7 +53,7 @@ const inQueue = (g: MatchSummary, id: QueueFilter) => {
 }
 /** Queue segments with games in the loaded history (and the active one). */
 const queues = computed(() =>
-  QUEUE_FILTERS.map((f) => ({ id: f.id as QueueFilter, label: SHORT[f.id as QueueFilter] ?? f.label, n: props.games.filter((g) => inQueue(g, f.id as QueueFilter)).length })).filter(
+  QUEUE_FILTERS.map((f) => ({ id: f.id as QueueFilter, label: QUEUE_SHORT[f.id as QueueFilter] ?? f.label, n: props.games.filter((g) => inQueue(g, f.id as QueueFilter)).length })).filter(
     (f) => f.id === 'all' || f.n > 0 || f.id === queue.value,
   ),
 )

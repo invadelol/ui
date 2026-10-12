@@ -1,6 +1,6 @@
 /** Names of things: ranks, queues, positions, badges and counted nouns. Each takes the host's `t`. */
 import { english, tk, type Translate } from './i18n.js'
-import type { Badge, Position, Rank, Totals } from './types.js'
+import type { Badge, Position, QueueFilter, Rank, Totals } from './types.js'
 
 export const TIERS = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER'] as const
 const TIER_NAMES: Record<string, string> = {
@@ -105,6 +105,15 @@ export const QUEUE_FILTERS = [
   { id: tk('aram'), label: tk('ARAM'), queues: [450, 720, 2400] },
   { id: tk('arena'), label: tk('Arena'), queues: [1700, 1710, 1750] },
 ] as const
+
+/** Shorter names of the filters, where the context already says "queue" (a filter bar, a narrow row). */
+export const QUEUE_SHORT: Partial<Record<QueueFilter, string>> = { all: tk('All'), solo: tk('Solo/Duo'), flex: tk('Flex') }
+
+/** A queue's short name for narrow rows: its filter's ("Solo/Duo", "Normal", "ARAM"…), else its own. */
+export function queueShort(id: number, t: Translate = english): string {
+  const f = QUEUE_FILTERS.find((x) => (x.queues as readonly number[] | null)?.includes(id))
+  return f ? t(QUEUE_SHORT[f.id] ?? f.label) : queueName(id, t)
+}
 
 export const POSITIONS: Record<Position, string> = {
   TOP: tk('Top'),
