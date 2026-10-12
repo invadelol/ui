@@ -161,7 +161,7 @@ const target = (p: PlayerView): LinkTarget | null =>
               <b>{{ p.kills }}<i>/</i>{{ p.deaths }}<i>/</i>{{ p.assists }}</b>
               <small>{{ kdaRatio(p.kills, p.deaths, p.assists) }} · {{ pct(p.kp) }} {{ t('KP') }}</small>
             </td>
-            <td class="num iv-sb-dmg" :title="damageTitle(p)">
+            <td class="num iv-sb-dmg" :title="damageTitle(p)" :data-l="t('dmg')">
               <b><small class="iv-sb-share">{{ pct(p.damageShare) }}</small>{{ compact(p.damage) }}</b>
               <i class="iv-sb-bar"><em :style="{ width: `${(p.damage / maxDamage) * 100}%` }" /></i>
             </td>
@@ -169,11 +169,11 @@ const target = (p: PlayerView): LinkTarget | null =>
               <b>{{ compact(p.damageTaken) }}</b>
               <i class="iv-sb-bar taken"><em :style="{ width: `${(p.damageTaken / maxTaken) * 100}%` }" /></i>
             </td>
-            <td class="num" :title="`${t('{share} of the team', { share: pct(p.goldShare) })} · ${t('Gold per minute')}: ${num(p.gold / minutes)}`">
+            <td class="num iv-sb-gold" :title="`${t('{share} of the team', { share: pct(p.goldShare) })} · ${t('Gold per minute')}: ${num(p.gold / minutes)}`" :data-l="t('gold')">
               <b>{{ compact(p.gold) }}</b>
               <small>{{ num(p.gold / minutes) }}</small>
             </td>
-            <td class="num">
+            <td class="num iv-sb-cs" :data-l="t('CS')">
               <b>{{ p.cs }}</b>
               <small>{{ num(p.csMin, 1) }}</small>
             </td>
@@ -181,7 +181,7 @@ const target = (p: PlayerView): LinkTarget | null =>
               <b>{{ p.vision }}</b>
               <small>{{ p.wardsPlaced }} / {{ p.wardsKilled }}</small>
             </td>
-            <td>
+            <td class="iv-sb-itd">
               <span class="iv-sb-items">
                 <template v-for="(id, i) in p.items" :key="i">
                   <img v-if="id" :src="itemIcon(id)" :alt="itemName(id)" :title="itemName(id)" :class="{ trinket: i === 6 }" @error="hideBroken" />
