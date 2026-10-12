@@ -484,6 +484,9 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
     grid-column: 1;
     grid-row: 1;
   }
+  .iv-mr:not(.compact) .iv-mr-champ em {
+    font-size: 11px;
+  }
   .iv-mr:not(.compact) .iv-mr-game {
     grid-column: 2 / 4;
     grid-row: 1;

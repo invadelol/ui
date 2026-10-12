@@ -255,6 +255,11 @@
   text-anchor: end;
   fill: var(--text-4);
 }
+@media (pointer: coarse) {
+  .iv-pf-lpg-guides text {
+    font-size: 11px;
+  }
+}
 .iv-pf-lpg-line {
   fill: none;
   stroke: var(--brand);
