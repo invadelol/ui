@@ -511,6 +511,204 @@ button.iv-sb-link:hover:not(:disabled) {
   width: 100cqw;
 }
 
+/* Between a phone and the full table (a tablet, a narrow window): every column at its narrowest,
+   so the table fits instead of scrolling past the score. */
+@container sb (min-width: 601px) and (max-width: 789px) {
+  .iv-sb {
+    min-width: 680px;
+  }
+  .iv-sb col.iv-sb-c-who {
+    width: 70px;
+  }
+  .iv-sb col.iv-sb-c-kda {
+    width: 80px;
+  }
+  .iv-sb col.iv-sb-c-dmg {
+    width: 64px;
+  }
+  .iv-sb col.iv-sb-c-gold {
+    width: 48px;
+  }
+  .iv-sb col.iv-sb-c-cs,
+  .iv-sb col.iv-sb-c-vis {
+    width: 40px;
+  }
+  .iv-sb col.iv-sb-c-items {
+    width: 136px;
+  }
+  .iv-sb col.iv-sb-c-score {
+    width: 84px;
+  }
+  .iv-sb col.iv-sb-c-more {
+    width: 28px;
+  }
+  .iv-sb-items img,
+  .iv-sb-items i {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* A phone: one card per player instead of a table that scrolls. The first line is who, the name,
+   the K/D/A and the score; the second the items, damage, gold and CS. Damage taken and vision are
+   in the player's detail, which the row opens. */
+@container sb (max-width: 600px) {
+  .iv-sb {
+    display: block;
+    min-width: 0;
+  }
+  .iv-sb colgroup,
+  .iv-sb thead {
+    display: none;
+  }
+  .iv-sb tbody,
+  .iv-sb tr.iv-sb-team,
+  .iv-sb tr.iv-sb-detail,
+  .iv-sb tr.iv-sb-team > td,
+  .iv-sb tr.iv-sb-detail > td {
+    display: block;
+  }
+  .iv-sb tr.iv-sb-team > td {
+    padding: 12px 6px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .iv-sb tbody + tbody tr.iv-sb-team > td {
+    padding-top: 20px;
+  }
+  .iv-sb-team-line {
+    gap: 6px 12px;
+  }
+  .iv-sb-obj {
+    gap: 10px;
+  }
+  .iv-sb-tot {
+    margin-left: 0;
+  }
+  .iv-sb tr.iv-sb-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    column-gap: 0;
+    padding: 8px 6px 9px;
+    border-bottom: 1px solid var(--line);
+  }
+  .iv-sb tbody tr.iv-sb-row:last-child,
+  .iv-sb tr.iv-sb-row.open {
+    border-bottom: 0;
+  }
+  .iv-sb tr.iv-sb-row > td {
+    display: block;
+    height: auto;
+    padding: 0;
+    border: 0;
+  }
+  .iv-sb tr.iv-sb-row > td.iv-sb-who {
+    order: 1;
+    flex: none;
+  }
+  .iv-sb tr.iv-sb-row > td.iv-sb-name {
+    order: 2;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .iv-sb tr.iv-sb-row > td.iv-sb-kda {
+    order: 3;
+    flex: none;
+  }
+  .iv-sb tr.iv-sb-row > td.iv-sb-score {
+    order: 4;
+    flex: none;
+  }
+  .iv-sb tr.iv-sb-row > td.iv-sb-more {
+    order: 5;
+    flex: none;
+    margin-right: -4px;
+  }
+  .iv-sb tr.iv-sb-row > :is(td.iv-sb-name, td.iv-sb-kda, td.iv-sb-score, td.iv-sb-more) {
+    margin-left: 8px;
+  }
+  /* The break between the two lines. */
+  .iv-sb tr.iv-sb-row::after {
+    content: '';
+    order: 6;
+    flex-basis: 100%;
+    height: 0;
+  }
+  .iv-sb tr.iv-sb-row > :is(td.iv-sb-itd, td.iv-sb-dmg, td.iv-sb-gold, td.iv-sb-cs) {
+    order: 8;
+    margin-top: 7px;
+    margin-left: 8px;
+  }
+  .iv-sb tr.iv-sb-row > td.iv-sb-itd {
+    order: 7;
+    margin-left: 0;
+    margin-right: auto;
+  }
+  .iv-sb-items img,
+  .iv-sb-items i {
+    width: 16px;
+    height: 16px;
+  }
+  .iv-sb-items .trinket {
+    margin-left: 3px;
+  }
+  /* Damage, gold and CS: the figure and a quiet unit, on one baseline. */
+  .iv-sb tr.iv-sb-row > :is(td.iv-sb-dmg, td.iv-sb-gold, td.iv-sb-cs):not(.iv-sb-taken) {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+    text-align: left;
+  }
+  .iv-sb tr.iv-sb-row > :is(td.iv-sb-dmg, td.iv-sb-gold, td.iv-sb-cs) > b {
+    font-size: 12px;
+  }
+  .iv-sb tr.iv-sb-row > :is(td.iv-sb-taken, td.iv-sb-vis).iv-sb-taken,
+  .iv-sb tr.iv-sb-row > td.iv-sb-vis {
+    display: none;
+  }
+  .iv-sb tr.iv-sb-row > :is(td.iv-sb-dmg, td.iv-sb-gold, td.iv-sb-cs)::after {
+    content: attr(data-l);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-3);
+  }
+  .iv-sb tr.iv-sb-row > :is(td.iv-sb-gold, td.iv-sb-cs) > small,
+  .iv-sb td.iv-sb-dmg .iv-sb-share,
+  .iv-sb td.iv-sb-dmg .iv-sb-bar {
+    display: none;
+  }
+  .iv-sb-portrait em {
+    font-size: 10px;
+  }
+  .iv-sb-line .iv-badge,
+  .iv-sb-score .iv-badge {
+    font-size: 11px;
+  }
+  .iv-sb-perf {
+    gap: 6px;
+  }
+  .iv-sb-detail-in {
+    width: auto;
+  }
+}
+/* A phone: the whole row opens the detail, the chevron's room goes to the name. */
+@container sb (max-width: 420px) {
+  .iv-sb tr.iv-sb-row > td.iv-sb-more {
+    display: none;
+  }
+}
+/* The narrowest phones (320px): the name keeps its room. */
+@container sb (max-width: 300px) {
+  .iv-sb td .iv-sb-perf > small,
+  .iv-sb-sub .iv-badge {
+    display: none;
+  }
+  /* The spells and runes are in the player's detail. */
+  .iv-sb td.iv-sb-who .iv-sb-load {
+    display: none !important;
+  }
+}
+
 /* --- Player detail (opened in the scoreboard) ------------------------------------------------------- */
 .iv-pd {
   container: pd / inline-size;
