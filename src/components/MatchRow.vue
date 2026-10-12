@@ -26,6 +26,7 @@ import '../styles/primitives.css'
 const props = withDefaults(
   defineProps<{
     game: MatchSummary
+    /** None (unscored, or not yet): no dial, the column keeps its width. */
     score?: ScoreRow | null
     /** LP gained or lost, when known. */
     lp?: number | null
@@ -133,7 +134,6 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
         <span class="iv-mr-score">
           <small v-if="compact && place" class="iv-mr-place" :class="tag">{{ place }}</small>
           <PerfDial v-if="score" :score="score100(score.score)" :rank="score.rank" :tag="tag" :size="compact ? 'sm' : 'md'" />
-          <PerfDial v-else-if="!g.remake" :score="null" :size="compact ? 'sm' : 'md'" />
         </span>
 
         <Icon v-if="!compact" name="down" :size="15" class="iv-mr-chev" />
