@@ -69,6 +69,20 @@
     display: none;
   }
 }
+/* A phone: the tabs keep one line and scroll sideways when they run out of room. */
+@container md (max-width: 520px) {
+  .iv-md-top .iv-tabs {
+    gap: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .iv-md-top .iv-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .iv-md-top .iv-tabs > button {
+    flex: none;
+  }
+}
 
 /* --- Scoreboard ------------------------------------------------------------------------------------ */
 .iv-sb-wrap {
@@ -1127,7 +1141,8 @@ button.iv-sb-link:hover:not(:disabled) {
 }
 .iv-pp-row {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 6px 10px;
 }
 .iv-pp-team {
   display: flex;
@@ -1196,6 +1211,19 @@ button.iv-sb-link:hover:not(:disabled) {
   }
   .iv-bd-facts {
     grid-column: 1 / -1;
+  }
+}
+/* A phone: runes, then the items and spells, then the details, one under the other. */
+@container md (max-width: 520px) {
+  .iv-bd-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .iv-bd-items {
+    flex-wrap: wrap;
+  }
+  .iv-bd-facts dl > div {
+    gap: 12px;
   }
 }
 .iv-bd h4.iv-label {
@@ -1396,6 +1424,23 @@ button.iv-sb-link:hover:not(:disabled) {
   color: var(--text-3);
 }
 
+/* A phone: the players wrap under "Whole game", a chapter's facts under its name, and the feed is
+   as long as the game (a box that scrolls inside the page traps the thumb). */
+@container md (max-width: 520px) {
+  .iv-evt-scope {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .iv-evt-phase {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+  .iv-evt .iv-evt-feed.iv-evt-feed.iv-evt-feed {
+    max-height: none;
+    overflow: visible;
+    mask-image: none;
+  }
+}
 /* The feed scrolls on its own; its edges fade only where there is more to see. */
 .iv-evt-feed {
   --fade: 28px;
@@ -2087,6 +2132,23 @@ button.iv-sb-link:hover:not(:disabled) {
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   padding: 4px 0;
 }
+/* A phone: two figures a line, each line starting at the edge. */
+@container md (max-width: 520px) {
+  .iv-brk-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 16px;
+  }
+  .iv-brk-fact:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+  .iv-brk-fact .iv-brk-label {
+    white-space: normal;
+  }
+  .iv-brk-table .iv-brk-c-label {
+    width: 116px;
+  }
+}
 .iv-brk-fact {
   display: grid;
   align-content: start;
@@ -2138,7 +2200,7 @@ button.iv-sb-link:hover:not(:disabled) {
 /* Duels: one diverging axis per stat. */
 .iv-brk-duels {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 12px 32px;
 }
 .iv-brk-duel-head {
