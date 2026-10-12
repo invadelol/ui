@@ -3,11 +3,11 @@
  * written back into the website's shape (what its API serves), dropping what the website does not
  * keep (mitigated damage, healing, crowd control, sprees).
  */
-import type { CoreEvent, CoreMatch, CoreTimelineEntry, MatchDetail } from '../src/logic'
+import type { CoreEvent, CoreMatch, CoreTimelineEntry, FromCoreOptions, MatchDetail } from '../src/logic'
 
 const RIOT = { TOP: 'TOP', JUNGLE: 'JUNGLE', MID: 'MIDDLE', ADC: 'BOTTOM', SUPPORT: 'UTILITY' } as const
 
-export function coreMatchOf(d: MatchDetail): { match: CoreMatch; scores: Record<string, number> } {
+export function coreMatchOf(d: MatchDetail): { match: CoreMatch; options: FromCoreOptions } {
   const team = (id: number) => d.teams.find((x) => x.teamId === id)!
   const [blue, red] = [team(100), team(200)]
   const tl = d.timeline
@@ -23,7 +23,8 @@ export function coreMatchOf(d: MatchDetail): { match: CoreMatch; scores: Record<
           goldTotal: tl.gold[i][k],
           cs: tl.cs[i][k],
           jungleCs: 0,
-          perks: k ? undefined : { primaryStyle: p.styles[0], secondaryStyle: p.styles[1], keystone: p.perks[0], runes: p.perks },
+          perks: k ? undefined : { primaryStyle: p.styles[0], secondaryStyle: p.styles[1], keystone: p.perks[0], runes: p.perks, statPerks: { offense: 5005, flex: 5008, defense: 5011 } },
+          skillOrder: p.skills,
         })),
       )
     : []
@@ -83,11 +84,21 @@ export function coreMatchOf(d: MatchDetail): { match: CoreMatch; scores: Record<
       goldEarned: p.gold,
       wardsPlaced: p.wardsPlaced,
       wardsKilled: p.wardsKilled,
+      neutralMinionsKilled: p.jungleCs,
+      // Riot's games count pings; a few of each kind, the support's mostly vision ones.
+      ...Object.fromEntries(['enemyMissing', 'onMyWay', 'danger', 'assist', 'allIn', 'push', 'getBack', 'command', 'needVision', 'enemyVision', 'visionCleared', 'bait', 'hold'].map((k, j) => [`${k}Pings`, (p.participantId * 7 + j * 5) % 9 > 4 ? ((p.participantId + j) % 6) + (p.position === 'SUPPORT' && j >= 8 ? 6 : 0) : 0])),
     })),
     timeline,
     events,
   }
-  // invade.lol scores 0‥100 (its own `lobbyScores`); the fixture's 0‥10 scores stand in.
-  const scores = Object.fromEntries(d.players.flatMap((p) => (p.score === null ? [] : [[p.puuid, Math.round(p.score * 10)]])))
-  return { match, scores }
+  // invade.lol scores 0‥100 with their breakdown (its own `scoreLobby`); the fixture's stand in.
+  const scored = d.players.filter((p) => p.score !== null)
+  const scores = Object.fromEntries(scored.map((p) => [p.puuid, Math.round(p.score! * 10)]))
+  const parts = Object.fromEntries(
+    scored.map((p) => {
+      const of = (f: (x: (typeof p.parts)[number]) => number) => Object.fromEntries(['fighting', 'damage', 'farming', 'vision', 'objectives'].map((k) => [k, f(p.parts.find((x) => x.key === k) ?? { key: 'vision', value: 0, weight: 0 })]))
+      return [p.puuid, { categories: of((x) => x.value), weights: of((x) => x.weight) }]
+    }),
+  ) as FromCoreOptions['parts']
+  return { match, options: { scores, parts } }
 }

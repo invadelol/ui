@@ -139,5 +139,6 @@ export const useNames = () => {
     styleIcon: (id: number) => ui.assetUrl('runeStyle', id),
     spellIcon: (id: number) => ui.assetUrl('spell', id),
     itemIcon: (id: number) => ui.assetUrl('item', id),
+    itemName: (id: number) => ui.name('item', id),
   }
 }
