@@ -692,7 +692,12 @@ button.iv-sb-link:hover:not(:disabled) {
     display: none;
   }
   .iv-sb-portrait em {
-    font-size: 10px;
+    font-size: 11px;
+  }
+  /* The name is a link inside a row that opens: a taller target than its 17px line. */
+  .iv-sb-link {
+    margin: -8px 0;
+    padding: 8px 0;
   }
   .iv-sb-line .iv-badge,
   .iv-sb-score .iv-badge {
