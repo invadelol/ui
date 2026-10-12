@@ -3,7 +3,7 @@
  * Builds the package and copies an installable copy of it (package.json, dist, LICENSE) to a
  * folder, for hosts that use it before it is on npm:
  *
- *   node scripts/vendor.mjs ~/private/invade/vendor/invadelol-ui
+ *   node scripts/vendor.mjs ../app/vendor/invadelol-ui
  *
  * then `"@invadelol/ui": "file:./vendor/invadelol-ui"` in the host. The folder is replaced
  * whole; source maps are left out (they point at sources the host does not have).
