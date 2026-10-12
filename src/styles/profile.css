@@ -227,24 +227,44 @@
   text-overflow: ellipsis;
   color: var(--text-3);
 }
-.iv-pf-delta {
-  font-weight: 600;
+.iv-pf-lpg-net {
+  font-size: 15px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
 }
-.iv-pf-lpg-svg {
+.iv-pf-lpg-plot {
+  position: relative;
+  margin-top: 10px;
+  border-radius: var(--r-sm);
+  outline: none;
+}
+.iv-pf-lpg-plot:focus-visible {
+  box-shadow: 0 0 0 2px rgb(var(--brand-rgb) / 0.45);
+}
+.iv-pf-lpg-plot svg {
   display: block;
   width: 100%;
-  height: auto;
-  margin-top: 8px;
   overflow: visible;
   touch-action: none;
 }
-.iv-pf-lpg-grid line {
-  stroke: var(--line);
+/* Divisions: a wash in the tier colour, a faint rule between them, a firmer one between tiers. */
+.iv-pf-lpg-bands rect {
+  fill-opacity: 0.045;
 }
-.iv-pf-lpg-grid text {
+.iv-pf-lpg-bands line {
+  stroke: var(--line);
+  stroke-dasharray: 2 4;
+}
+.iv-pf-lpg-bands line.edge {
+  stroke: var(--line-2);
+  stroke-dasharray: none;
+}
+.iv-pf-lpg-bands text {
   font-size: 10.5px;
   font-weight: 600;
-  opacity: 0.85;
+  text-anchor: end;
+  dominant-baseline: central;
+  opacity: 0.8;
 }
 .iv-pf-lpg-line {
   fill: none;
@@ -253,13 +273,91 @@
   stroke-linejoin: round;
   stroke-linecap: round;
 }
+.iv-pf-lpg-line.flat {
+  stroke-dasharray: 3 4;
+  opacity: 0.6;
+}
 .iv-pf-lpg-cross {
   stroke: var(--line-3);
 }
-.iv-pf-lpg-dot {
+/* Game marks: only while the chart is read. */
+.iv-pf-lpg-marks circle {
+  fill: var(--text-3);
+  stroke: var(--solid-1);
+  stroke-width: 1.5;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.iv-pf-lpg-plot.on .iv-pf-lpg-marks circle {
+  opacity: 1;
+}
+.iv-pf-lpg-plot circle.win {
+  fill: var(--win);
+}
+.iv-pf-lpg-plot circle.loss {
+  fill: var(--loss);
+}
+.iv-pf-lpg-first {
+  fill: var(--solid-1);
+  stroke: var(--brand);
+  stroke-width: 1.5;
+}
+.iv-pf-lpg-halo {
+  fill: var(--brand);
+  opacity: 0.16;
+}
+.iv-pf-lpg-now,
+.iv-pf-lpg-hot {
   fill: var(--brand-hi);
-  stroke: var(--ink-1);
+  stroke: var(--solid-1);
   stroke-width: 2;
+}
+.iv-pf-lpg-tip {
+  position: absolute;
+  top: 2px;
+  z-index: 2;
+  display: grid;
+  gap: 3px;
+  padding: 7px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  background: var(--solid-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-3);
+  pointer-events: none;
+}
+.iv-pf-lpg-tip small {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+.iv-pf-lpg-tip p {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.iv-pf-lpg-tip .win {
+  color: var(--win);
+}
+.iv-pf-lpg-tip .loss {
+  color: var(--loss);
+}
+.iv-pf-lpg-empty {
+  display: grid;
+  place-items: center;
+  min-height: 152px;
+  margin-top: 10px;
+  text-align: center;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-md);
+}
+@media (prefers-reduced-motion: reduce) {
+  .iv-pf-lpg-marks circle {
+    transition: none;
+  }
 }
 .iv-pf-facts {
   display: grid;
