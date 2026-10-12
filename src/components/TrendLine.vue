@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
+import { monotone } from '../curve'
 import '../styles/base.css'
 
 /**
  * A straight-segment line: the player's series in brand, an
  * optional dashed baseline (what a delta is computed against) and an optional shaded band over
- * the last points (what "last 5" means). Stretches to its box; strokes keep their width.
+ * the last points (what "last 5" means). Stretches to its box; strokes keep their width. With
+ * `area` it is a sparkline instead: a smooth line over a soft fade, nothing else.
  */
 const props = withDefaults(
   defineProps<{
@@ -35,9 +37,11 @@ const geo = computed(() => {
   const x = (i: number) => (i / (v.length - 1)) * 100
   const pts = v.map((val, i) => `${x(i).toFixed(2)},${y(val).toFixed(2)}`)
   const bandFrom = props.band > 0 && props.band < v.length ? x(v.length - props.band) : null
+  const curve = props.area ? monotone(v.map((val, i) => [x(i), y(val)])) : ''
   return {
     line: pts.join(' '),
-    area: `0,${h} ${pts.join(' ')} 100,${h}`,
+    curve,
+    area: `${curve}L100 ${h}L0 ${h}Z`,
     base: props.baseline != null ? y(props.baseline) : null,
     bandFrom,
     h,
@@ -50,14 +54,17 @@ const id = `iv-trend-${useId()}`
   <svg v-if="geo" class="iv-trend" :viewBox="`0 0 100 ${geo.h}`" preserveAspectRatio="none" :height="geo.h" aria-hidden="true">
     <defs v-if="area">
       <linearGradient :id="id" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0" stop-color="var(--brand)" stop-opacity="0.16" />
+        <stop offset="0" stop-color="var(--brand)" stop-opacity="0.12" />
         <stop offset="1" stop-color="var(--brand)" stop-opacity="0" />
       </linearGradient>
     </defs>
     <rect v-if="geo.bandFrom != null" :x="geo.bandFrom" y="0" :width="100 - geo.bandFrom" :height="geo.h" class="iv-trend-band" />
     <line v-if="geo.base != null" x1="0" x2="100" :y1="geo.base" :y2="geo.base" class="iv-trend-base" />
-    <polygon v-if="area" :points="geo.area" :fill="`url(#${id})`" />
-    <polyline :points="geo.line" class="iv-trend-series" />
+    <template v-if="area">
+      <path :d="geo.area" :fill="`url(#${id})`" />
+      <path :d="geo.curve" class="iv-trend-series" />
+    </template>
+    <polyline v-else :points="geo.line" class="iv-trend-series" />
   </svg>
   <span v-else class="iv-trend empty" />
 </template>
