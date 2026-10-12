@@ -14,9 +14,19 @@ import '../styles/profile.css'
  * must ask Riot for). `load` appends the next page in the host; it resolves `{ retryAfterMs }`
  * when the source held older games back (invade.lol's Riot budget): the list then ends quietly,
  * with no countdown, and a later reach of the end after that window asks once more. It throws on
- * failure (Try again). `more`: older games may exist. Key it by player.
+ * failure (Try again). `more`: older games may exist. Key it by player. `auto` false: one page per
+ * tap instead.
  */
-const props = defineProps<{ more: boolean; load: () => Promise<void | { retryAfterMs: number }> }>()
+const props = withDefaults(
+  defineProps<{
+    more: boolean
+    load: () => Promise<void | { retryAfterMs: number }>
+    /** false: older games wait for a tap on "Show older games" (a page whose content continues
+     *  after the list, such as a phone's profile, keeps that content reachable). */
+    auto?: boolean
+  }>(),
+  { auto: true },
+)
 const { t } = useInvadeUi()
 
 const end = endOfList()
@@ -43,6 +53,7 @@ async function next(reach = false) {
     state.value = 'error'
     return
   }
+  if (!props.auto) return
   // New rows pushed the end down: observing again reports whether it is still in view (then the
   // next page loads). When nothing moved, the next page waits for the next time it comes into view.
   await nextTick()
@@ -58,12 +69,18 @@ function retry() {
   void next(true)
 }
 
+/** The tap that loads the next page when the list does not load on its own. */
+function older() {
+  visible = true
+  void next(true)
+}
+
 onMounted(() => {
   observer = new IntersectionObserver(
     ([entry]) => {
       const was = visible
       visible = entry.isIntersecting
-      if (visible) void next(!was)
+      if (visible && props.auto) void next(!was)
     },
     { rootMargin: '240px 0px' },
   )
@@ -74,7 +91,7 @@ watch(
   (more) => {
     // A new list (filters, a refresh): it asks freely again.
     if (more) end.clear()
-    void next()
+    if (props.auto) void next()
   },
 )
 onBeforeUnmount(() => observer?.disconnect())
@@ -88,5 +105,8 @@ onBeforeUnmount(() => observer?.disconnect())
       <button type="button" class="iv-btn sm" @click="retry"><Icon name="refresh" :size="13" />{{ t('Try again') }}</button>
     </p>
     <p v-else-if="!more" class="iv-more-line iv-more-end" role="status">{{ t("That's every tracked game") }}</p>
+    <p v-else-if="!auto" class="iv-more-line">
+      <button type="button" class="iv-btn iv-more-btn" @click="older"><Icon name="down" :size="14" />{{ t('Show older games') }}</button>
+    </p>
   </div>
 </template>
