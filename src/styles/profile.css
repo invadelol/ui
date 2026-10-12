@@ -209,32 +209,33 @@
   margin-left: auto;
 }
 
-/* LP history */
+/* LP history: one line in brand, nothing else at rest. */
 .iv-pf-lpg-read {
   display: flex;
   align-items: baseline;
   gap: 8px;
   min-height: 20px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
+  color: var(--text-2);
+}
+.iv-pf-lpg-read b {
+  font-size: 18px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
 }
 .iv-pf-lpg-read small {
   overflow: hidden;
   margin-left: auto;
   font-size: 12px;
-  font-weight: 500;
   text-overflow: ellipsis;
   color: var(--text-3);
 }
-.iv-pf-lpg-net {
-  font-size: 15px;
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
-}
 .iv-pf-lpg-plot {
   position: relative;
-  margin-top: 10px;
+  margin: 14px 0 6px;
   border-radius: var(--r-sm);
   outline: none;
 }
@@ -247,24 +248,14 @@
   overflow: visible;
   touch-action: none;
 }
-/* Divisions: a wash in the tier colour, a faint rule between them, a firmer one between tiers. */
-.iv-pf-lpg-bands rect {
-  fill-opacity: 0.045;
-}
-.iv-pf-lpg-bands line {
+.iv-pf-lpg-guides line {
   stroke: var(--line);
-  stroke-dasharray: 2 4;
 }
-.iv-pf-lpg-bands line.edge {
-  stroke: var(--line-2);
-  stroke-dasharray: none;
-}
-.iv-pf-lpg-bands text {
-  font-size: 10.5px;
-  font-weight: 600;
+.iv-pf-lpg-guides text {
+  font-size: 10px;
+  font-weight: 500;
   text-anchor: end;
-  dominant-baseline: central;
-  opacity: 0.8;
+  fill: var(--text-4);
 }
 .iv-pf-lpg-line {
   fill: none;
@@ -273,91 +264,37 @@
   stroke-linejoin: round;
   stroke-linecap: round;
 }
-.iv-pf-lpg-line.flat {
-  stroke-dasharray: 3 4;
-  opacity: 0.6;
-}
 .iv-pf-lpg-cross {
-  stroke: var(--line-3);
-}
-/* Game marks: only while the chart is read. */
-.iv-pf-lpg-marks circle {
-  fill: var(--text-3);
-  stroke: var(--solid-1);
-  stroke-width: 1.5;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-.iv-pf-lpg-plot.on .iv-pf-lpg-marks circle {
-  opacity: 1;
-}
-.iv-pf-lpg-plot circle.win {
-  fill: var(--win);
-}
-.iv-pf-lpg-plot circle.loss {
-  fill: var(--loss);
-}
-.iv-pf-lpg-first {
-  fill: var(--solid-1);
-  stroke: var(--brand);
-  stroke-width: 1.5;
+  stroke: var(--line-2);
 }
 .iv-pf-lpg-halo {
   fill: var(--brand);
-  opacity: 0.16;
+  opacity: 0.14;
 }
-.iv-pf-lpg-now,
-.iv-pf-lpg-hot {
-  fill: var(--brand-hi);
-  stroke: var(--solid-1);
-  stroke-width: 2;
+.iv-pf-lpg-dot {
+  fill: var(--brand);
 }
 .iv-pf-lpg-tip {
   position: absolute;
-  top: 2px;
+  top: -6px;
   z-index: 2;
-  display: grid;
-  gap: 3px;
-  padding: 7px 10px;
-  font-size: 12.5px;
-  font-weight: 600;
+  display: flex;
+  gap: 8px;
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 500;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+  color: var(--text-3);
   background: var(--solid-1);
   border: 1px solid var(--line-2);
-  border-radius: var(--r-md);
+  border-radius: var(--r-sm);
   box-shadow: var(--shadow-3);
   pointer-events: none;
 }
-.iv-pf-lpg-tip small {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-3);
-}
-.iv-pf-lpg-tip p {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-.iv-pf-lpg-tip .win {
-  color: var(--win);
-}
-.iv-pf-lpg-tip .loss {
-  color: var(--loss);
-}
-.iv-pf-lpg-empty {
-  display: grid;
-  place-items: center;
-  min-height: 152px;
-  margin-top: 10px;
-  text-align: center;
-  border: 1px dashed var(--line-2);
-  border-radius: var(--r-md);
-}
-@media (prefers-reduced-motion: reduce) {
-  .iv-pf-lpg-marks circle {
-    transition: none;
-  }
+.iv-pf-lpg-tip b {
+  font-weight: 600;
+  color: var(--text-1);
 }
 .iv-pf-facts {
   display: grid;
