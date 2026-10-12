@@ -244,7 +244,7 @@
   display: block;
   width: 100%;
   overflow: visible;
-  touch-action: none;
+  touch-action: pan-y;
 }
 .iv-pf-lpg-guides line {
   stroke: var(--line);

@@ -88,6 +88,16 @@ function move(e: PointerEvent) {
   const px = ((e.clientX - r.left) / r.width) * W.value
   hover.value = Math.max(0, Math.min(last.value, Math.round(((px - 2) / (g.right - 4)) * last.value)))
 }
+/** A finger lifting is not the pointer leaving, nor is the page scrolling away under a tap (Safari
+ *  reports both as a leave): after a touch the reading stays until the graph loses focus. */
+let touched = false
+function press(e: PointerEvent) {
+  touched = e.pointerType === 'touch'
+  move(e)
+}
+function lift() {
+  if (!touched) hover.value = null
+}
 function key(e: KeyboardEvent) {
   const k = hover.value ?? last.value
   if (e.key === 'ArrowLeft') hover.value = Math.max(0, k - 1)
@@ -149,7 +159,7 @@ const date = (ms: number, time = false) => format(ms, { day: 'numeric', month: '
       <small v-else>{{ date(now.t, true) }}</small>
     </p>
     <div v-if="geo" class="iv-pf-lpg-plot" tabindex="0" role="img" :aria-label="t('LP history')" @keydown="key" @blur="hover = null">
-      <svg :viewBox="`0 0 ${W} ${H}`" :height="H" aria-hidden="true" @pointermove="move" @pointerleave="hover = null">
+      <svg :viewBox="`0 0 ${W} ${H}`" :height="H" aria-hidden="true" @pointerdown="press" @pointermove="move" @pointerleave="lift">
         <defs>
           <linearGradient :id="fill" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0" stop-color="var(--brand)" stop-opacity="0.12" />
