@@ -21,28 +21,25 @@
 }
 .iv-pf-side {
   display: grid;
-  gap: 12px;
+  gap: 16px;
   min-width: 0;
 }
 .iv-pf-feed {
   min-width: 0;
 }
-/* Narrow: the side panels go above the feed in two balanced columns (at most two, so the
-   champion table keeps room for its columns), each panel right under the previous one: no holes
-   from panels of different heights. Kept short so the games stay near the top (three champions
-   until "Show all"). */
-@container pf (max-width: 1100px) {
+/* Narrow (under ~830px left for the feed, its filter bar would wrap and its rows squeeze): the feed
+   takes the whole width and the side panels go above it, paired in a grid in their order of
+   priority. A row's panels share its height (one top, one bottom edge: no holes), and an odd count
+   lets the first one take a whole row. Kept short so the games stay near the top (three champions until "Show all"). */
+@container pf (max-width: 1180px) {
   .iv-pf-cols {
     grid-template-columns: minmax(0, 1fr);
   }
   .iv-pf-side {
-    display: block;
-    columns: 300px 2;
-    column-gap: 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .iv-pf-side > * {
-    break-inside: avoid;
-    margin-bottom: 12px;
+  .iv-pf-side > :first-child:nth-last-child(odd) {
+    grid-column: 1 / -1;
   }
   .iv-pf-champs:not(.all) tbody tr:nth-child(n + 4) {
     display: none;
@@ -51,11 +48,12 @@
     display: inline-flex;
   }
 }
-/* Phone (invade.lol): the games first, the tendencies after them, so the feed is not pushed off
-   the first screens. */
+/* Phone (one column): the games first, the tendencies after them, so the feed is not pushed off the
+   first screens. */
 @container pf (max-width: 640px) {
   .iv-pf-side {
     order: 1;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
