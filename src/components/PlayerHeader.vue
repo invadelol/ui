@@ -57,7 +57,7 @@ const lastSeason = (r: Rank | null) => (r?.previous ? t('Last season: {tier}', {
 
     <div class="iv-pf-ranks">
       <div v-for="r in ranks" :key="r.id" class="iv-pf-rank" :class="{ none: !r.rank }" :title="lastSeason(r.rank)">
-        <RankCrest :tier="r.rank?.tier" :size="r.rank ? 40 : 28" />
+        <RankCrest :tier="r.rank?.tier" :size="r.rank ? 40 : 28" emblem />
         <div>
           <p>
             <b v-if="r.rank" :style="{ color: tierColor(r.rank.tier) }">{{ rankLabel(r.rank, false, t) }}</b>
