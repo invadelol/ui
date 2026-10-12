@@ -7,6 +7,7 @@ import type { MatchSummary, Position, QueueFilter, ScoreRow } from '../logic/typ
 import Icon from './Icon.vue'
 import MatchRow from './MatchRow.vue'
 import MatchRowSkeleton from './MatchRowSkeleton.vue'
+import MoreMatches from './MoreMatches.vue'
 import RoleIcon from './RoleIcon.vue'
 import '../styles/base.css'
 import '../styles/primitives.css'
@@ -15,7 +16,8 @@ import '../styles/profile.css'
 /**
  * The feed: one filter bar, one summary line of what it shows (record, KDA, form), then the
  * games grouped by day (or by champion). A row opens the host's `detail` slot right below it
- * (`{ game }`: the host loads the game and renders `MatchDetail`).
+ * (`{ game }`: the host loads the game and renders `MatchDetail`). With `loadMore`, older games
+ * load as the end comes into view (`MoreMatches`, paced per player).
  */
 const props = withDefaults(
   defineProps<{
@@ -30,14 +32,16 @@ const props = withDefaults(
     error?: string
     /** The history is private: says so instead of an error or an empty list. */
     private?: boolean
+    /** Older games may exist (`loadMore` asks for them). */
     more?: boolean
-    loadingMore?: boolean
+    /** Loads the next page of older games into `games` (see `MoreMatches`). */
+    loadMore?: () => Promise<void | { wait: number }>
     /** A game to open and scroll to once it is in the list (a deep link). */
     focus?: number | null
   }>(),
-  { lp: () => new Map(), error: '', private: false, more: false, loadingMore: false, focus: null },
+  { lp: () => new Map(), error: '', private: false, more: false, loadMore: undefined, focus: null },
 )
-const emit = defineEmits<{ more: []; retry: [] }>()
+const emit = defineEmits<{ retry: [] }>()
 defineSlots<{ detail?: (props: { game: MatchSummary }) => unknown }>()
 const slots = useSlots()
 const { t } = useInvadeUi()
@@ -223,12 +227,7 @@ const formTitle = (g: MatchSummary) => `${champName(g.championId)} · ${g.remake
     </div>
     <div v-else-if="!shown.length" class="iv-pf-state">
       <p>{{ t('No games match these filters in the {n} loaded.', { n: games.length }) }}</p>
-      <div class="iv-pf-state-actions">
-        <button type="button" class="iv-btn sm" @click="clear">{{ t('Clear filters') }}</button>
-        <button v-if="more" type="button" class="iv-btn ghost sm" :disabled="loadingMore" @click="emit('more')">
-          {{ loadingMore ? t('Loading…') : t('Load older games') }}
-        </button>
-      </div>
+      <button type="button" class="iv-btn sm" @click="clear">{{ t('Clear filters') }}</button>
     </div>
 
     <template v-else>
@@ -246,9 +245,7 @@ const formTitle = (g: MatchSummary) => `${champName(g.championId)} · ${g.remake
           </li>
         </ul>
       </section>
-      <button v-if="more" type="button" class="iv-btn ghost iv-pf-loadmore" :disabled="loadingMore" @click="emit('more')">
-        <Icon v-if="!loadingMore" name="down" :size="14" />{{ loadingMore ? t('Loading…') : t('Load older games') }}
-      </button>
     </template>
+    <MoreMatches v-if="loadMore && status === 'ready' && games.length" :key="puuid" :more="more" :load="loadMore" />
   </section>
 </template>
