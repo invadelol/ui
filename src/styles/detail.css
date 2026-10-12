@@ -126,6 +126,11 @@
   font-size: 13px;
   font-weight: 600;
 }
+/* The score dial's figure too: the row's figures share one size. */
+.iv-sb td .iv-dial b {
+  font-size: 13px;
+  font-weight: 600;
+}
 .iv-sb small {
   font-size: 11px;
   font-weight: 500;
