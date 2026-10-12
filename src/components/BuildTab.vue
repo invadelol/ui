@@ -20,7 +20,7 @@ const props = defineProps<{ detail: MatchDetail; selected: number; me?: PlayerVi
 const emit = defineEmits<{ select: [index: number] }>()
 const { t } = useInvadeUi()
 const { compact, signedGold } = useFormat()
-const { itemIcon, runeIcon, runeName, spellIcon, spellName, styleIcon, styleName } = useNames()
+const { itemIcon, itemName, runeIcon, runeName, spellIcon, spellName, styleIcon, styleName } = useNames()
 
 const p = computed(() => props.detail.players[props.selected])
 const taken = computed(() => new Set(p.value.perks))
@@ -77,7 +77,7 @@ const facts = computed(() => {
         <h4 class="iv-label">{{ t('Items') }}</h4>
         <div class="iv-bd-items">
           <template v-for="(id, i) in p.items" :key="i">
-            <img v-if="id" :src="itemIcon(id)" alt="" :class="{ trinket: i === 6 }" @error="hideBroken" />
+            <img v-if="id" :src="itemIcon(id)" :alt="itemName(id)" :title="itemName(id)" :class="{ trinket: i === 6 }" @error="hideBroken" />
             <i v-else :class="{ trinket: i === 6 }" />
           </template>
         </div>

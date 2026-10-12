@@ -26,7 +26,7 @@ const props = defineProps<{ detail: MatchDetail; puuid: string }>()
 const ui = useInvadeUi()
 const { t } = ui
 const { compact, kdaRatio, num, ordinal, pct, score100, signedGold } = useFormat()
-const { champIcon, champName, itemIcon, runeIcon, runeName, spellIcon, spellName, styleIcon, styleName } = useNames()
+const { champIcon, champName, itemIcon, itemName, runeIcon, runeName, spellIcon, spellName, styleIcon, styleName } = useNames()
 
 const viewer = computed(() => props.detail.players.find((p) => p.puuid === props.puuid))
 const teams = computed(() => teamsOf(props.detail, viewer.value))
@@ -169,7 +169,7 @@ const target = (p: PlayerView): LinkTarget | null =>
             <td>
               <span class="iv-sb-items">
                 <template v-for="(id, i) in p.items" :key="i">
-                  <img v-if="id" :src="itemIcon(id)" alt="" :class="{ trinket: i === 6 }" @error="hideBroken" />
+                  <img v-if="id" :src="itemIcon(id)" :alt="itemName(id)" :title="itemName(id)" :class="{ trinket: i === 6 }" @error="hideBroken" />
                   <i v-else :class="{ trinket: i === 6 }" />
                 </template>
               </span>
