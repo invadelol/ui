@@ -534,13 +534,9 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
   display: flex;
   align-items: baseline;
   gap: 10px;
-  margin: 20px 2px 8px;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-2);
-}
-.iv-mr-day:first-child {
-  margin-top: 0;
 }
 .iv-mr-day span {
   margin-left: auto;
