@@ -4,6 +4,7 @@ import MatchRowSkeleton from './MatchRowSkeleton.vue'
 /**
  * The profile page's frame: the header band on top, then the side panels beside the feed (the
  * feed is the page's subject). Narrow: the side panels go above the feed in two balanced columns.
+ * Without side panels the content takes the whole width (another section of the profile).
  * Pass `loading` for the page's own loading shapes instead of the slots.
  */
 defineProps<{ loading?: boolean }>()
@@ -31,8 +32,8 @@ defineProps<{ loading?: boolean }>()
     </template>
     <template v-else>
       <slot name="header" />
-      <div class="iv-pf-cols">
-        <aside class="iv-pf-side"><slot name="side" /></aside>
+      <div class="iv-pf-cols" :class="{ solo: !$slots.side }">
+        <aside v-if="$slots.side" class="iv-pf-side"><slot name="side" /></aside>
         <slot />
       </div>
     </template>

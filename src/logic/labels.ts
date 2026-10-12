@@ -1,6 +1,6 @@
 /** Names of things: ranks, queues, positions, badges and counted nouns. Each takes the host's `t`. */
-import { english, tk, type Translate } from './i18n'
-import type { Badge, Position, Rank, Totals } from './types'
+import { english, tk, type Translate } from './i18n.js'
+import type { Badge, Position, Rank, Totals } from './types.js'
 
 export const TIERS = ['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER'] as const
 const TIER_NAMES: Record<string, string> = {
