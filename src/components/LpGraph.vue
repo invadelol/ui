@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, shallowRef, useId, watchEffect } from 'vue'
+import { computed, onBeforeUnmount, onMounted, shallowRef, useId, watchEffect, watchPostEffect } from 'vue'
 import { useFormat, useInvadeUi } from '../context'
 import { monotone } from '../curve'
 import { signedLp } from '../logic/format'
@@ -109,9 +109,14 @@ const read = computed(() => {
     x,
     y,
     change: i > 0 ? Math.round(p.value - pts.value[i - 1].value) : null,
-    // Beside the point, on the side with room.
-    style: x > geo.value.right / 2 ? { right: `${W.value - x + 10}px` } : { left: `${x + 10}px` },
+    // Beside the point, on the side with room, and never past the graph's edges.
+    style: { left: `${Math.max(0, Math.min(x > geo.value.right / 2 ? x - tipW.value - 10 : x + 10, W.value - tipW.value))}px` },
   }
+})
+const tip = shallowRef<HTMLElement | null>(null)
+const tipW = shallowRef(0)
+watchPostEffect(() => {
+  if (read.value && tip.value) tipW.value = tip.value.offsetWidth
 })
 /** At rest: the net change over the whole line. */
 const net = computed(() => {
@@ -164,7 +169,7 @@ const date = (ms: number, time = false) => format(ms, { day: 'numeric', month: '
         <circle :cx="geo.dots[last][0]" :cy="geo.dots[last][1]" r="3" class="iv-pf-lpg-dot" />
         <circle v-if="read" :cx="read.x" :cy="read.y" r="3" class="iv-pf-lpg-dot" />
       </svg>
-      <p v-if="read" class="iv-pf-lpg-tip" :style="read.style">
+      <p v-if="read" ref="tip" class="iv-pf-lpg-tip" :style="read.style">
         <span>{{ date(read.point.t, true) }}</span>
         <b>{{ rankLabel(read.point, false, t) }} {{ read.point.lp }} {{ t('LP') }}</b>
         <span v-if="read.change !== null">{{ signedLp(read.change) }}</span>
