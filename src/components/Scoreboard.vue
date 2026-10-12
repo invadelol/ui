@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, shallowRef, useId, watch } from 'vue'
 import { useFormat, useInvadeUi, useNames, type LinkTarget } from '../context'
 import { hideBroken } from '../dom'
 import { riotId, side, teamsOf } from '../logic/detail'
 import { BADGES, positionName, topBadges } from '../logic/labels'
 import type { MatchDetail, PlayerView, TeamView } from '../logic/types'
+import Icon from './Icon.vue'
 import Link from './Link.vue'
 import ObjectiveIcon, { type ObjectiveIconName } from './ObjectiveIcon.vue'
 import PerfDial from './PerfDial.vue'
+import PlayerDetail from './PlayerDetail.vue'
 import '../styles/base.css'
 import '../styles/primitives.css'
 import '../styles/detail.css'
@@ -16,7 +18,8 @@ import '../styles/detail.css'
  * Both teams in one table, the viewed player's team first. The team line carries the result
  * word in its colour (the only result colour), objectives with counts, bans and totals; each
  * player row follows the table spec, the viewed player's row in brand. A name links to that
- * player (through the host's `linkTo` / `onOpen`).
+ * player (through the host's `linkTo` / `onOpen`). A row opens that player's game under it
+ * (`PlayerDetail`), one at a time: a click anywhere on it but a link, or its chevron button.
  */
 const props = defineProps<{ detail: MatchDetail; puuid: string }>()
 
@@ -51,6 +54,16 @@ const bans = (team: TeamView) => team.bans.filter((b) => b > 0)
 /** A lead at 15 minutes is worth a colour from 1000 gold (the "Lane won" mark). */
 const leadClass = (g: number) => (g >= 1000 ? 'iv-up' : g <= -1000 ? 'iv-down' : '')
 
+/** Participant id of the player whose detail is open. */
+const open = shallowRef<number | null>(null)
+watch(() => props.detail, () => (open.value = null))
+const toggle = (p: PlayerView) => (open.value = open.value === p.participantId ? null : p.participantId)
+/** The row's own links and buttons do their own thing. */
+const onRow = (e: MouseEvent, p: PlayerView) => {
+  if (!(e.target as Element).closest('a, button')) toggle(p)
+}
+const uid = useId()
+
 /** Another player's profile; none for the viewed player or an unknown one. */
 const target = (p: PlayerView): LinkTarget | null =>
   p.puuid && p.puuid !== props.puuid ? { kind: 'player', puuid: p.puuid, gameName: p.gameName, tagLine: p.tagLine } : null
@@ -69,6 +82,7 @@ const target = (p: PlayerView): LinkTarget | null =>
         <col class="iv-sb-c-vis" />
         <col class="iv-sb-c-items" />
         <col class="iv-sb-c-score" />
+        <col class="iv-sb-c-more" />
       </colgroup>
       <thead>
         <tr>
@@ -80,11 +94,12 @@ const target = (p: PlayerView): LinkTarget | null =>
           <th class="num iv-sb-vis">{{ t('Vision') }}</th>
           <th>{{ t('Items') }}</th>
           <th class="num" :title="t('Invade score')">{{ t('Score') }}</th>
+          <th />
         </tr>
       </thead>
       <tbody v-for="{ team, players, placement } in teams" :key="team.teamId" :class="team.win ? 'won' : 'lost'">
         <tr class="iv-sb-team">
-          <td colspan="9">
+          <td colspan="10">
             <div class="iv-sb-team-line">
               <b class="iv-sb-res" :class="detail.remake ? '' : team.win ? 'win' : 'loss'">{{ result(team, placement) }}</b>
               <span v-if="sideName(team.teamId)" class="iv-sb-side">{{ sideName(team.teamId) }}</span>
@@ -102,73 +117,92 @@ const target = (p: PlayerView): LinkTarget | null =>
             </div>
           </td>
         </tr>
-        <tr v-for="p in players" :key="p.participantId" :class="{ self: p.puuid === puuid }">
-          <td class="iv-sb-who">
-            <span class="iv-sb-portrait" :title="champName(p.championId)">
-              <span class="iv-sb-art"><img :src="champIcon(p.championId)" alt="" /></span>
-              <em>{{ p.level }}</em>
-            </span>
-            <span class="iv-sb-load">
-              <img v-for="(s, i) in p.spells" :key="i" :src="spellIcon(s)" :alt="spellName(s)" :title="spellName(s)" @error="hideBroken" />
-              <img v-if="p.perks[0]" :src="runeIcon(p.perks[0])" :title="runeName(p.perks[0])" alt="" class="key" @error="hideBroken" />
-              <i v-else />
-              <img v-if="p.styles[1]" :src="styleIcon(p.styles[1])" :title="styleName(p.styles[1])" alt="" class="sub" @error="hideBroken" />
-            </span>
-          </td>
-          <td class="iv-sb-name">
-            <span class="iv-sb-line">
-              <Link class="iv-sb-link" :to="target(p)" :title="riotId(p) || champName(p.championId)">
-                {{ p.gameName || champName(p.championId) }}<small v-if="p.tagLine">#{{ p.tagLine }}</small>
-              </Link>
-              <span v-if="p.puuid && p.puuid === ui.viewer.value && p.puuid !== puuid" class="iv-badge brand">{{ t('You') }}</span>
-            </span>
-            <span class="iv-sb-line iv-sb-sub">
-              <small>
-                <template v-if="p.position">{{ positionName(p.position, t) }}</template>
-                <template v-else>{{ champName(p.championId) }}</template>
-                <template v-if="p.gold15 !== null">
-                  · <span :class="leadClass(p.gold15)" :title="t('Gold lead over the lane opponent at 15 minutes')">{{ t('{gold} gold @15', { gold: signedGold(p.gold15) }) }}</span>
+        <template v-for="p in players" :key="p.participantId">
+          <tr class="iv-sb-row" :class="{ self: p.puuid === puuid, open: open === p.participantId }" @click="onRow($event, p)">
+            <td class="iv-sb-who">
+              <span class="iv-sb-portrait" :title="champName(p.championId)">
+                <span class="iv-sb-art"><img :src="champIcon(p.championId)" alt="" /></span>
+                <em>{{ p.level }}</em>
+              </span>
+              <span class="iv-sb-load">
+                <img v-for="(s, i) in p.spells" :key="i" :src="spellIcon(s)" :alt="spellName(s)" :title="spellName(s)" @error="hideBroken" />
+                <img v-if="p.perks[0]" :src="runeIcon(p.perks[0])" :title="runeName(p.perks[0])" alt="" class="key" @error="hideBroken" />
+                <i v-else />
+                <img v-if="p.styles[1]" :src="styleIcon(p.styles[1])" :title="styleName(p.styles[1])" alt="" class="sub" @error="hideBroken" />
+              </span>
+            </td>
+            <td class="iv-sb-name">
+              <span class="iv-sb-line">
+                <Link class="iv-sb-link" :to="target(p)" :title="riotId(p) || champName(p.championId)">
+                  {{ p.gameName || champName(p.championId) }}<small v-if="p.tagLine">#{{ p.tagLine }}</small>
+                </Link>
+                <span v-if="p.puuid && p.puuid === ui.viewer.value && p.puuid !== puuid" class="iv-badge brand">{{ t('You') }}</span>
+              </span>
+              <span class="iv-sb-line iv-sb-sub">
+                <small>
+                  <template v-if="p.position">{{ positionName(p.position, t) }}</template>
+                  <template v-else>{{ champName(p.championId) }}</template>
+                  <template v-if="p.gold15 !== null">
+                    · <span :class="leadClass(p.gold15)" :title="t('Gold lead over the lane opponent at 15 minutes')">{{ t('{gold} gold @15', { gold: signedGold(p.gold15) }) }}</span>
+                  </template>
+                </small>
+                <span v-for="b in topBadges(p.badges)" :key="b" class="iv-badge" :title="t(BADGES[b].tip)">{{ t(BADGES[b].label) }}</span>
+              </span>
+            </td>
+            <td class="num iv-sb-kda">
+              <b>{{ p.kills }}<i>/</i>{{ p.deaths }}<i>/</i>{{ p.assists }}</b>
+              <small>{{ kdaRatio(p.kills, p.deaths, p.assists) }} · {{ pct(p.kp) }} {{ t('KP') }}</small>
+            </td>
+            <td class="num iv-sb-dmg" :title="`${num(p.damage)} · ${t('{share} of the team', { share: pct(p.damageShare) })}`">
+              <b>{{ compact(p.damage) }}</b>
+              <i class="iv-sb-bar"><em :style="{ width: `${(p.damage / maxDamage) * 100}%` }" /></i>
+            </td>
+            <td class="num" :title="t('{share} of the team', { share: pct(p.goldShare) })">
+              <b>{{ compact(p.gold) }}</b>
+            </td>
+            <td class="num">
+              <b>{{ p.cs }}</b>
+              <small>{{ num(p.csMin, 1) }}</small>
+            </td>
+            <td class="num iv-sb-vis" :title="t('{placed} placed · {killed} destroyed · {control} control wards', { placed: p.wardsPlaced, killed: p.wardsKilled, control: p.controlWards })">
+              <b>{{ p.vision }}</b>
+            </td>
+            <td>
+              <span class="iv-sb-items">
+                <template v-for="(id, i) in p.items" :key="i">
+                  <img v-if="id" :src="itemIcon(id)" alt="" :class="{ trinket: i === 6 }" @error="hideBroken" />
+                  <i v-else :class="{ trinket: i === 6 }" />
                 </template>
-              </small>
-              <span v-for="b in topBadges(p.badges)" :key="b" class="iv-badge" :title="t(BADGES[b].tip)">{{ t(BADGES[b].label) }}</span>
-            </span>
-          </td>
-          <td class="num iv-sb-kda">
-            <b>{{ p.kills }}<i>/</i>{{ p.deaths }}<i>/</i>{{ p.assists }}</b>
-            <small>{{ kdaRatio(p.kills, p.deaths, p.assists) }} · {{ pct(p.kp) }} {{ t('KP') }}</small>
-          </td>
-          <td class="num iv-sb-dmg" :title="`${num(p.damage)} · ${t('{share} of the team', { share: pct(p.damageShare) })}`">
-            <b>{{ compact(p.damage) }}</b>
-            <i class="iv-sb-bar"><em :style="{ width: `${(p.damage / maxDamage) * 100}%` }" /></i>
-          </td>
-          <td class="num" :title="t('{share} of the team', { share: pct(p.goldShare) })">
-            <b>{{ compact(p.gold) }}</b>
-          </td>
-          <td class="num">
-            <b>{{ p.cs }}</b>
-            <small>{{ num(p.csMin, 1) }}</small>
-          </td>
-          <td class="num iv-sb-vis" :title="t('{placed} placed · {killed} destroyed · {control} control wards', { placed: p.wardsPlaced, killed: p.wardsKilled, control: p.controlWards })">
-            <b>{{ p.vision }}</b>
-          </td>
-          <td>
-            <span class="iv-sb-items">
-              <template v-for="(id, i) in p.items" :key="i">
-                <img v-if="id" :src="itemIcon(id)" alt="" :class="{ trinket: i === 6 }" @error="hideBroken" />
-                <i v-else :class="{ trinket: i === 6 }" />
-              </template>
-            </span>
-          </td>
-          <td class="num iv-sb-score">
-            <span v-if="p.score !== null" class="iv-sb-perf">
-              <span v-if="p.badges.includes('mvp')" class="iv-badge gold" :title="t(BADGES.mvp.tip)">{{ t('MVP') }}</span>
-              <span v-else-if="p.badges.includes('ace')" class="iv-badge" :title="t(BADGES.ace.tip)">{{ t('ACE') }}</span>
-              <small v-else>{{ ordinal(p.rank) }}</small>
-              <PerfDial :score="score100(p.score)" :rank="p.rank" size="sm" />
-            </span>
-            <span v-else class="iv-pf-dim">–</span>
-          </td>
-        </tr>
+              </span>
+            </td>
+            <td class="num iv-sb-score">
+              <span v-if="p.score !== null" class="iv-sb-perf">
+                <span v-if="p.badges.includes('mvp')" class="iv-badge gold" :title="t(BADGES.mvp.tip)">{{ t('MVP') }}</span>
+                <span v-else-if="p.badges.includes('ace')" class="iv-badge" :title="t(BADGES.ace.tip)">{{ t('ACE') }}</span>
+                <small v-else>{{ ordinal(p.rank) }}</small>
+                <PerfDial :score="score100(p.score)" :rank="p.rank" size="sm" />
+              </span>
+              <span v-else class="iv-pf-dim">–</span>
+            </td>
+            <td class="iv-sb-more">
+              <button
+                type="button"
+                class="iv-sb-toggle"
+                :aria-expanded="open === p.participantId"
+                :aria-controls="`${uid}-${p.participantId}`"
+                :aria-label="t('Details of {name}', { name: p.gameName || champName(p.championId) })"
+                @click="toggle(p)"
+              >
+                <Icon name="down" :size="14" />
+              </button>
+            </td>
+          </tr>
+          <tr v-if="open === p.participantId" class="iv-sb-detail">
+            <td :id="`${uid}-${p.participantId}`" colspan="10">
+              <div class="iv-sb-detail-in"><PlayerDetail :detail="detail" :player="p" :me="viewer" /></div>
+            </td>
+          </tr>
+        </template>
       </tbody>
     </table>
   </div>

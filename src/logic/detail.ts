@@ -1,5 +1,6 @@
 /** Helpers shared by the match detail views. */
-import type { MatchDetail, PlayerView, TeamView } from './types.js'
+import { tk } from './i18n.js'
+import type { MatchDetail, Ping, PlayerView, ScoreCategory, TeamView, TimelineView } from './types.js'
 
 /**
  * Colours are relative to the viewed player: them in brand, their team in the "good for you"
@@ -44,3 +45,63 @@ export const RUNE_SLOTS: Record<number, number[][]> = {
 
 /** Whether the timeline carries any event to tell (stored games from before events were kept do not). */
 export const hasEvents = (d: MatchDetail) => !!d.timeline && (d.timeline.kills.length > 0 || d.timeline.objectives.length > 0)
+
+/** The parts of a score, in the order they are read, with their names. */
+export const SCORE_PARTS: Record<ScoreCategory, string> = {
+  fighting: tk('Fighting'),
+  damage: tk('Damage'),
+  farming: tk('Farming'),
+  vision: tk('Vision'),
+  objectives: tk('Objectives'),
+}
+export const SCORE_CATEGORIES = Object.keys(SCORE_PARTS) as ScoreCategory[]
+
+/** Ping kinds with their in-game names. */
+export const PINGS: Record<Ping, string> = {
+  enemyMissing: tk('Enemy missing'),
+  onMyWay: tk('On my way'),
+  danger: tk('Danger'),
+  assist: tk('Assist me'),
+  allIn: tk('All in'),
+  push: tk('Push'),
+  getBack: tk('Get back'),
+  command: tk('Command'),
+  needVision: tk('Need vision'),
+  enemyVision: tk('Enemy vision'),
+  visionCleared: tk('Vision cleared'),
+  bait: tk('Bait'),
+  hold: tk('Hold'),
+}
+
+const SKILL_KEYS = ['Q', 'W', 'E', 'R'] as const
+export type SkillKey = (typeof SKILL_KEYS)[number]
+
+/** Q/W/E/R × 18 levels: each cell holds the level the point was spent at, else null. */
+export function skillMatrix(skills: number[]): Record<SkillKey, (number | null)[]> {
+  const m = Object.fromEntries(SKILL_KEYS.map((k) => [k, new Array<number | null>(18).fill(null)])) as Record<SkillKey, (number | null)[]>
+  skills.slice(0, 18).forEach((slot, i) => {
+    const key = SKILL_KEYS[slot - 1]
+    if (key) m[key][i] = i + 1
+  })
+  return m
+}
+
+/** The basic skills in the order they were first taken: `['E', 'Q', 'W']`. */
+export function skillPriority(skills: number[]): SkillKey[] {
+  const seen: SkillKey[] = []
+  for (const slot of skills) {
+    const key = SKILL_KEYS[slot - 1]
+    if (key && key !== 'R' && !seen.includes(key)) seen.push(key)
+  }
+  return seen
+}
+
+/** Gold, CS and XP leads over a player's lane opponent at a minute, when the game lasted that long. */
+export function laneLead(t: TimelineView, i: number, j: number, minute: number): { minute: number; gold: number; cs: number; xp: number } | null {
+  const s = minute * 60
+  if (!t.t.length || t.t[t.t.length - 1] < s) return null
+  // The last frame at or before the minute.
+  let k = 0
+  while (k + 1 < t.t.length && t.t[k + 1] <= s) k++
+  return { minute, gold: t.gold[i][k] - t.gold[j][k], cs: t.cs[i][k] - t.cs[j][k], xp: t.xp[i][k] - t.xp[j][k] }
+}

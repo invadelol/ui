@@ -2,6 +2,7 @@
  * Story fixtures: the desktop app's browser-preview data (src/dev/mock.ts and mocks/profile.ts),
  * so the stories show what the app shows. Seeded, so every build draws the same games.
  */
+import { SCORE_CATEGORIES } from '../src/logic'
 import type { Badge, Kill, MatchDetail, MatchSummary, Objective, PlayedWith, PlayerCard, PlayerView, Position, ProfileView, TeamView } from '../src/logic'
 
 
@@ -237,6 +238,7 @@ export function detailOf(g: MatchSummary): MatchDetail {
       assists,
       kp: 0,
       cs,
+      jungleCs: pos === 'JUNGLE' ? Math.round(cs * 0.85) : int(0, 8),
       csMin: cs / minutes,
       gold,
       goldShare: 0,
@@ -268,8 +270,10 @@ export function detailOf(g: MatchSummary): MatchDetail {
       xp15: null,
       cs15: null,
       score: null,
+      parts: [],
       rank: 0,
       badges: [],
+      skills: [],
       augments: [],
       placement: 0,
     })
@@ -362,6 +366,24 @@ export function detailOf(g: MatchSummary): MatchDetail {
   if (g.score?.badges) {
     for (const p of players) if (p !== self) p.badges = p.badges.filter((b) => b === 'mvp' || b === 'ace' || !g.score!.badges!.includes(b))
     self.badges = [...self.badges.filter((b) => b === 'mvp' || b === 'ace'), ...g.score.badges]
+  }
+
+  // What each score is made of (the role weights invade.lol uses), and a skill order: the three
+  // basics in a role-like order, the first maxed first, R at 6, 11 and 16.
+  const WEIGHTS: Record<Position, number[]> = { TOP: [25, 25, 25, 8, 17], JUNGLE: [30, 15, 15, 15, 25], MID: [28, 30, 25, 7, 10], ADC: [27, 32, 28, 5, 8], SUPPORT: [40, 15, 0, 40, 5] }
+  const ORDERS = [[1, 3, 2], [1, 2, 3], [3, 1, 2], [2, 1, 3]]
+  for (const p of players) {
+    const base = p.score! * 10
+    p.parts = SCORE_CATEGORIES.map((key, k) => ({ key, value: Math.max(4, Math.min(97, Math.round(base + (rnd() - 0.5) * 40))), weight: WEIGHTS[p.position!][k] })).filter((x) => x.weight)
+    const order = ORDERS[p.participantId % ORDERS.length]
+    const left = [4, 4, 4]
+    p.skills = Array.from({ length: p.level }, (_, i) => {
+      const level = i + 1
+      if (level === 6 || level === 11 || level === 16) return 4
+      const k = level <= 3 ? level - 1 : left.findIndex((n) => n > 0)
+      if (level > 3) left[k]--
+      return order[k]
+    })
   }
 
   // Timeline: one frame per minute plus the end.
