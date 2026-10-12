@@ -7,7 +7,9 @@ import '../styles/base.css'
  * A straight-segment line: the player's series in brand, an
  * optional dashed baseline (what a delta is computed against) and an optional shaded band over
  * the last points (what "last 5" means). Stretches to its box; strokes keep their width. With
- * `area` it is a sparkline instead: a smooth line over a soft fade, nothing else.
+ * `area` it is a sparkline instead: a smooth line over a soft fade, nothing else. With `span` the
+ * height stands for at least that range and the line keeps headroom, so ordinary noise reads as
+ * the gentle variation it is instead of filling the box.
  */
 const props = withDefaults(
   defineProps<{
@@ -17,8 +19,10 @@ const props = withDefaults(
     /** Shade the last N points. */
     band?: number
     area?: boolean
+    /** The least range the height stands for, in the values' unit (CS/min: 2). */
+    span?: number
   }>(),
-  { height: 28, baseline: null, band: 0, area: false },
+  { height: 28, baseline: null, band: 0, area: false, span: 0 },
 )
 
 const PAD = 3
@@ -28,7 +32,13 @@ const geo = computed(() => {
   const all = props.baseline != null ? [...v, props.baseline] : v
   let min = Math.min(...all)
   let max = Math.max(...all)
-  if (max - min < 1e-9) {
+  if (props.span > 0) {
+    // Centred, with 30 % of the range free above and below.
+    const half = Math.max((max - min) * 0.8, props.span / 2)
+    const mid = (min + max) / 2
+    min = mid - half
+    max = mid + half
+  } else if (max - min < 1e-9) {
     min -= 1
     max += 1
   }
