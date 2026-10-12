@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { gameFavorite, useFormat, useInvadeUi, useNames } from '../context'
 import { hideBroken } from '../dom'
-import { BADGES, queueName, topBadges } from '../logic/labels'
+import { BADGES, queueName, queueShort, topBadges } from '../logic/labels'
 import type { Badge, MatchSummary, ScoreRow } from '../logic/types'
 import Icon from './Icon.vue'
 import PerfDial from './PerfDial.vue'
@@ -51,6 +51,8 @@ const { champIcon, champName, itemIcon, runeIcon, runeName, spellIcon, spellName
 const g = computed(() => props.game)
 const result = computed(() => (g.value.remake ? 'remake' : g.value.win ? 'win' : 'loss'))
 const queue = computed(() => (g.value.queueId === 420 ? t('Ranked Solo') : queueName(g.value.queueId, t)))
+/** Narrow rows name the queue by its filter ("Solo/Duo", "Normal"), so nothing is cut. */
+const queueBrief = computed(() => queueShort(g.value.queueId, t))
 /** Second line of the game column: LP when known, else the result in words. */
 const outcome = computed(() => {
   if (g.value.remake) return t('Remake')
@@ -86,14 +88,14 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
         </span>
 
         <span class="iv-mr-game" :title="started">
-          <b>{{ queue }}</b>
+          <b><span class="iv-mr-q">{{ queue }}</span><span class="iv-mr-q brief">{{ queueBrief }}</span></b>
           <small><span class="iv-mr-outcome" :class="{ lp: lp != null && !g.remake && !g.placement }">{{ outcome }}</span> · {{ mmss(g.duration) }}</small>
         </span>
 
         <span class="iv-mr-kda">
           <b>{{ g.kills }}<i>/</i>{{ g.deaths }}<i>/</i>{{ g.assists }}</b>
           <small>
-            {{ kdaRatio(g.kills, g.deaths, g.assists) }} {{ t('KDA') }}<template v-if="killShare != null"> · {{ pct(killShare) }} {{ t('KP') }}</template>
+            {{ kdaRatio(g.kills, g.deaths, g.assists) }} {{ t('KDA') }}<span v-if="killShare != null" class="iv-mr-kp"> · {{ pct(killShare) }} {{ t('KP') }}</span>
           </small>
         </span>
 
@@ -431,11 +433,62 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
     height: 20px;
   }
 }
-@container mr (max-width: 540px) {
+/* Items need ~615px with everything else at its minimum: below that they go, rather than push the
+   chevron out of the row. */
+@container mr (max-width: 620px) {
   .iv-mr-grid {
     grid-template-columns: 44px 42px minmax(0, 1fr) minmax(0, 1fr) 48px 15px;
   }
   .iv-mr-items {
+    display: none;
+  }
+}
+
+/* Narrow (a phone, a narrow tile): champion and loadout, the game, the full K/D/A over its ratio,
+   the score. Nothing is cut: the queue takes its short name, the K/D/A its own width. */
+.iv-mr-q.brief {
+  display: none;
+}
+@container mr (max-width: 520px) {
+  .iv-mr-q {
+    display: none;
+  }
+  .iv-mr-q.brief {
+    display: inline;
+  }
+  .iv-mr:not(.compact) .iv-mr-grid {
+    grid-template-columns: 40px 38px minmax(0, 1fr) max-content 48px;
+    column-gap: 10px;
+    padding: 0 10px 0 14px;
+  }
+  .iv-mr:not(.compact) .iv-mr-champ {
+    width: 40px;
+    height: 40px;
+  }
+  .iv-mr:not(.compact) .iv-mr-load {
+    grid-template-columns: 18px 18px;
+    grid-template-rows: 18px 18px;
+  }
+  .iv-mr:not(.compact) .iv-mr-load img {
+    width: 18px;
+    height: 18px;
+  }
+  .iv-mr:not(.compact) .iv-mr-load img.key {
+    width: 19px;
+    height: 19px;
+  }
+  .iv-mr:not(.compact) .iv-mr-load img.sub {
+    width: 13px;
+    height: 13px;
+  }
+  .iv-mr-kda b {
+    font-size: 14px;
+  }
+  .iv-mr-kda b i {
+    margin: 0 3px;
+  }
+  .iv-mr-kp,
+  .iv-mr-chev {
     display: none;
   }
 }
