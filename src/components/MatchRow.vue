@@ -173,14 +173,27 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
   box-shadow: var(--row);
   cursor: pointer;
   container: mr / inline-size;
-  transition: background-color var(--t-fast), transform var(--t-fast) var(--ease);
+  /* Its own stacking context: the hover wash (::after, z-index -1) sits over the row's background
+     and under its content. */
+  isolation: isolate;
 }
-/* Hover raises a closed row by 1px: a transform, so it is composited, never repainted. */
-@media (prefers-reduced-motion: no-preference) {
-  .iv-mr-wrap:hover > .iv-mr:not(.open),
-  .iv-mr-wrap:hover > .iv-mr:not(.open) + .iv-mr-star {
-    transform: translateY(-1px);
-  }
+/* Hover: a faint wash fades in over a closed row, nothing moves. Only the overlay's opacity
+   changes, so the row (portraits, items, the dial) is neither laid out nor re-rasterized again:
+   the 1px lift this replaces made WebKit rebuild the row's layer and re-render its text, at
+   fractional offsets, on every hover. */
+.iv-mr::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--glint);
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+  pointer-events: none;
+}
+.iv-mr-wrap:hover > .iv-mr:not(.open)::after {
+  opacity: 1;
 }
 /* The result: a straight edge and a tint of the same hue that starts at the edge and fades out, so
    each row has a direction instead of a painted floor. */
@@ -207,7 +220,6 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
 .iv-mr.remake {
   opacity: 0.6;
 }
-.iv-mr-wrap:hover > .iv-mr,
 .iv-mr.open {
   background: linear-gradient(90deg, var(--tint), var(--tint-end) 45%), var(--surface-2);
 }
@@ -572,7 +584,7 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
   right: 6px;
   bottom: 0;
   margin: auto 0;
-  transition: opacity var(--t-fast), color var(--t-fast), background-color var(--t-fast), transform var(--t-fast) var(--ease);
+  transition: opacity 180ms ease-out, color var(--t-fast), background-color var(--t-fast);
 }
 .iv-mr-star:not(.saved):not(:focus-visible) {
   opacity: 0;
