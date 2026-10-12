@@ -76,7 +76,9 @@
   overflow-x: auto;
 }
 .iv-sb {
-  min-width: 660px;
+  /* The fixed columns take ~630px at their narrowest: below 760px the table scrolls rather than
+     squeeze the names to an initial. */
+  min-width: 760px;
   table-layout: fixed;
 }
 .iv-sb col.iv-sb-c-who {
