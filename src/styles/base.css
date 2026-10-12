@@ -13,7 +13,8 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* Package markup only: border-box, no default margins, neutral buttons (each view styles its own). */
+/* Package markup only: border-box, no default margins, semibold buttons with no box (each view
+   styles its own). */
 :where([class^='iv-'], [class*=' iv-']),
 :where([class^='iv-'], [class*=' iv-']) *,
 :where([class^='iv-'], [class*=' iv-']) ::before,
@@ -28,6 +29,7 @@
 :where([class^='iv-'], [class*=' iv-']) :where(button) {
   padding: 0;
   font: inherit;
+  font-weight: 600;
   color: inherit;
   text-align: inherit;
   background: none;
