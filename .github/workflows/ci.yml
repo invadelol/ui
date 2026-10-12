@@ -21,35 +21,27 @@ jobs:
       - run: pnpm build
       - run: pnpm story:build
 
-  # A `v*` tag publishes to npm once the NPM_TOKEN secret exists (the @invadelol scope is the
-  # owner's to create); until then the job only says why it skipped.
+  # A `v*` tag publishes to npm through trusted publishing (OIDC): no token or secret. npm must
+  # list this repository and workflow (`ci.yml`) as the package's trusted publisher
+  # (npmjs.com → @invadelol/ui → Settings → Trusted Publisher → GitHub Actions).
   publish:
     needs: check
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      id-token: write
     steps:
-      - if: env.NPM_TOKEN == ''
-        run: echo "::notice::NPM_TOKEN is not set; not publishing ${GITHUB_REF_NAME}."
-      - if: env.NPM_TOKEN != ''
-        uses: actions/checkout@v4
-      - if: env.NPM_TOKEN != ''
-        uses: pnpm/action-setup@v4
-      - if: env.NPM_TOKEN != ''
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: pnpm
           registry-url: https://registry.npmjs.org
-      - if: env.NPM_TOKEN != ''
-        name: Tag matches the package version
+      # Trusted publishing needs npm 11.5.1 or newer.
+      - run: npm install -g npm@11
+      - name: Tag matches the package version
         run: test "${GITHUB_REF_NAME#v}" = "$(node -p "require('./package.json').version")"
-      - if: env.NPM_TOKEN != ''
-        run: pnpm install --frozen-lockfile && pnpm build
-      - if: env.NPM_TOKEN != ''
-        run: pnpm publish --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: pnpm install --frozen-lockfile && pnpm build
+      - run: npm publish --access public --provenance
