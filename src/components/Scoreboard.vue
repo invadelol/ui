@@ -31,7 +31,6 @@ const { champIcon, champName, itemIcon, runeIcon, runeName, spellIcon, spellName
 const viewer = computed(() => props.detail.players.find((p) => p.puuid === props.puuid))
 const teams = computed(() => teamsOf(props.detail, viewer.value))
 const maxDamage = computed(() => Math.max(1, ...props.detail.players.map((p) => p.damage)))
-const sr = computed(() => props.detail.mapId === 11)
 const arena = computed(() => props.detail.players.some((p) => p.placement > 0))
 
 /** Objectives with their count; a count the source does not keep (grubs) is left out. */
@@ -103,7 +102,7 @@ const target = (p: PlayerView): LinkTarget | null =>
             <div class="iv-sb-team-line">
               <b class="iv-sb-res" :class="detail.remake ? '' : team.win ? 'win' : 'loss'">{{ result(team, placement) }}</b>
               <span v-if="sideName(team.teamId)" class="iv-sb-side">{{ sideName(team.teamId) }}</span>
-              <span v-if="sr" class="iv-sb-obj">
+              <span class="iv-sb-obj">
                 <span v-for="o in objectives(team)" :key="o.id" :title="o.label" :class="{ none: !o.n }"><ObjectiveIcon :name="o.id" :size="14" />{{ o.n }}</span>
               </span>
               <span v-if="bans(team).length" class="iv-sb-bans" :title="t('Bans')">
