@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, shallowRef } from 'vue'
 import { ChampionTable, LpGraph, MatchDetailPanel, MatchList, PlayedWithPanel, PlayerHeader, ProfileLayout, RolesPanel } from '../src'
-import { lpByGame, type Position, type QueueFilter } from '../src/logic'
+import { lpByGame, type MatchSummary, type Position, type QueueFilter } from '../src/logic'
 import { detailOf, games, otherProfile, playedWith, profile, scores } from './fixtures'
 
 const queue = shallowRef<QueueFilter>('all')
@@ -9,6 +9,16 @@ const champion = shallowRef(0)
 const role = shallowRef<Position | ''>('')
 const order = shallowRef<'recent' | 'champion'>('recent')
 const lp = computed(() => lpByGame(profile.lp, games))
+
+/** Older pages: the fixtures again, a week further back each time, six pages in all. */
+const feed = shallowRef<MatchSummary[]>(games)
+const more = shallowRef(true)
+async function loadMore() {
+  await new Promise((r) => setTimeout(r, 700))
+  const page = feed.value.length / games.length
+  feed.value = [...feed.value, ...games.map((g) => ({ ...g, gameId: g.gameId + page * 1000, creation: g.creation - page * 7 * 86_400_000 }))]
+  more.value = page < 5
+}
 </script>
 
 <template>
@@ -29,11 +39,12 @@ const lp = computed(() => lpByGame(profile.lp, games))
             v-model:role="role"
             v-model:order="order"
             puuid="mock-self"
-            :games="games"
+            :games="feed"
             :scores="scores"
             :lp="lp"
             status="ready"
-            more
+            :more="more"
+            :load-more="loadMore"
           >
             <template #detail="{ game }"><MatchDetailPanel :detail="detailOf(game)" puuid="mock-self" /></template>
           </MatchList>

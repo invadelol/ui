@@ -20,7 +20,7 @@ made here once and shows in both products.
 |---|---|
 | Primitives | `Button`, `Segmented`, `Tabs`, `Switch`, `Panel`, `Skeleton`, `Icon`, `Logo`, `StarButton`, `Link`, `TrendLine`; CSS-only: `.iv-badge`, `.iv-table`, `.iv-select`, `.iv-form`, `.iv-fig`, `.iv-label`, `.iv-error`, `.iv-empty` |
 | Game things | `ChampIcon`, `ItemIcons`, `RunePage`, `RoleIcon`, `ObjectiveIcon`, `RankCrest` (small crests bundled), `PerfDial` |
-| Matches | `MatchRow` (+ `MatchRowSkeleton`), `MatchList` (filters, summary, day groups), `MatchDetailPanel` with its tabs `Scoreboard`, `Breakdown`, `GoldChart`, `Timeline`, `BuildTab` (+ `PlayerPicker`) |
+| Matches | `MatchRow` (+ `MatchRowSkeleton`), `MatchList` (filters, summary, day groups), `MoreMatches` (infinite scroll), `MatchDetailPanel` with its tabs `Scoreboard`, `Breakdown`, `GoldChart`, `Timeline`, `BuildTab` (+ `PlayerPicker`) |
 | Profile | `ProfileLayout` (and its loading shapes), `PlayerHeader`, `LpGraph`, `ChampionTable`, `RolesPanel`, `PlayedWithPanel` |
 
 Where a view would share its name with a model type (`MatchDetail`, `PlayedWith`), it is a `…Panel`.
@@ -105,7 +105,13 @@ Inside a component under the plugin:
   feed). `loading` draws the page's own loading shapes instead.
 - `MatchList`: filters, summary and day groups. Data loading stays in the host: a row opens the
   `detail` slot right below it (`<template #detail="{ game }">`), where the host loads the game and
-  renders `MatchDetailPanel` (`detail: null` while loading, `error` with a Try again).
+  renders `MatchDetailPanel` (`detail: null` while loading, `error` with a Try again). With
+  `loadMore` (and `more`), older games load as the end of the list comes into view.
+- `MoreMatches`: that end of a list, on its own for a host's own list. As it comes into view it
+  calls `load()` (the host appends the next page; it resolves `{ wait }` in ms when its source
+  refused, throws on failure), paced by the paging rule below: skeleton rows while loading, "More
+  games in 1:42" while the rule holds a page back (then it loads by itself if still in view), "That's
+  every tracked game" once `more` is false, an error with Try again. Key it by player.
 - `MatchRow` is its own size container: it drops the matchup, then farm, then items as it narrows,
   and below 520px (a phone, a narrow tile) keeps champion, loadout, short queue name, result,
   duration, K/D/A and score. `compact` is the 44px variant for lists beside other content.
@@ -125,6 +131,11 @@ const profile = profileFromCore({ summoner, ranks, mastery, games }) // ProfileV
 const rank = rankFromCore(coreRank) // Rank
 const mates = playedWithFromCore(matches, puuid) // PlayedWith
 ```
+
+**Paging rule** (`pager.ts`): older games come in pages of `PAGE_SIZE` (15), `PAGE_BURST` (3) of
+them right away, then one every `PAGE_EVERY_MS` (2 minutes), so scrolling never drains the Riot key.
+`pager()` is one view's count (`MoreMatches` keeps one); `nextPage(tat, now)` is the same rule as one
+number, which a server keeps per player and client (invade.lol does in Redis). Tests: `pnpm test`.
 
 ### Strings
 
@@ -147,10 +158,11 @@ pnpm typecheck
 pnpm build         # dist/: index.js, logic.js, a module and its CSS per component, types,
                    # style.css, tokens.css, tokens-light.css, fonts, keys.json
 pnpm story:build   # the static preview, in .histoire/dist
+pnpm test          # the logic's unit tests (node --test)
 ```
 
-CI (`.github/workflows/ci.yml`) runs typecheck, build and the Histoire build on every push and
-pull request.
+CI (`.github/workflows/ci.yml`) runs typecheck, tests, build and the Histoire build on every push
+and pull request.
 
 ## Releasing
 
