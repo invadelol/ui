@@ -22,7 +22,9 @@ import '../styles/detail.css'
  * is shared by the tabs that are about one player and starts on the viewed player.
  *
  * The host loads the game: `detail` null while it loads (the detail's own shapes), `error` a
- * message when it could not (with Try again, `retry`).
+ * message when it could not (with Try again, `retry`). A host that already has the scoreboard
+ * (invade.lol's match list) passes it with `loading` while the rest comes: the tabs that need the
+ * timeline wait for it, and nothing says the game has none.
  */
 const props = withDefaults(
   defineProps<{
@@ -32,8 +34,10 @@ const props = withDefaults(
     error?: string | null
     /** invade.lol's id of the game, kept with a favorite. */
     matchId?: string | null
+    /** `detail` is a partial game; the full one (with its timeline, if any) is on its way. */
+    loading?: boolean
   }>(),
-  { error: null, matchId: null },
+  { error: null, matchId: null, loading: false },
 )
 defineEmits<{ retry: [] }>()
 
@@ -93,7 +97,7 @@ const favorite = computed(() =>
         </nav>
         <p class="iv-md-meta">
           <span
-            v-if="!detail.timeline"
+            v-if="!detail.timeline && !loading"
             :title="detail.fromCore ? t('invade.lol has no timeline for this game: no graphs and no events.') : t('The League client has no timeline for this game: no graphs and no events.')"
             >{{ t('No timeline') }} · </span
           >{{ meta }}
