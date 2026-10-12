@@ -69,13 +69,14 @@ app.use(
 (English, no images, inert links), so a view always renders. Put the views inside an element with
 the `iv-root` class (or set the same font and colour on the page).
 
-**Desktop app** (`src/ui.ts` in the app): `t` / `locale` from its i18n, `assetUrl` and `name` from
-Data Dragon and its bundled `data/*.json`, `onOpen` navigates in place, `viewer` is the signed-in
-player, `favorites` is the app's favorites store.
+**Desktop app** (`src/ui.ts` in the app): `t` / `locale` from its i18n, `assetUrl` from
+`https://invade.lol/cdn/<patch>/…` (pinned to its bundled data's patch, so the WebView keeps every
+image for good), `name` from its bundled `data/*.json`, `onOpen` navigates in place, `viewer` is
+the signed-in player, `favorites` is the app's favorites store.
 
 **invade.lol** (`inertia/app/ui.ts` in core): English only (the package's default strings),
 `assetUrl` and `name` from the `/cdn/…` proxy and its name maps (`/cdn/perkstyle/{id}.png` for
-`runeStyle`), `linkTo` returns real profile URLs (crawlable, open in a new tab), `onOpen` hands the
+`runeStyle`, `/cdn/emblem/{tier}.png` for `rank`), `linkTo` returns real profile URLs (crawlable, open in a new tab), `onOpen` hands the
 click to the Inertia router.
 
 ### Composables
