@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import '../styles/base.css'
+import '../styles/primitives.css'
+
 /** Match rows while games load: the row's own shapes (portrait, two lines, items, score). */
 withDefaults(defineProps<{ count?: number }>(), { count: 6 })
 </script>

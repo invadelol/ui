@@ -2,6 +2,9 @@
 import { useFormat, useInvadeUi } from '../context'
 import type { PlayedWith } from '../logic/types'
 import Link from './Link.vue'
+import '../styles/base.css'
+import '../styles/primitives.css'
+import '../styles/profile.css'
 
 /**
  * The people this player queues with: teammates seen in at least two of their latest full games.

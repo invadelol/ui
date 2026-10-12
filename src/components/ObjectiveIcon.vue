@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import '../styles/base.css'
+
 /** Map objectives as line glyphs (24 × 24, 1.8 stroke, same family as Icon). */
 export type ObjectiveIconName = 'tower' | 'inhib' | 'dragon' | 'grubs' | 'herald' | 'baron'
 defineProps<{ name: ObjectiveIconName; size?: number }>()

@@ -8,6 +8,9 @@ import Icon from './Icon.vue'
 import MatchRow from './MatchRow.vue'
 import MatchRowSkeleton from './MatchRowSkeleton.vue'
 import RoleIcon from './RoleIcon.vue'
+import '../styles/base.css'
+import '../styles/primitives.css'
+import '../styles/profile.css'
 
 /**
  * The feed: one filter bar, one summary line of what it shows (record, KDA, form), then the

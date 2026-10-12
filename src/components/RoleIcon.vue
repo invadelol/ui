@@ -1,6 +1,7 @@
 <script setup lang="ts">
 /** Position glyphs (Riot's lane marks). Empty for no position (modes without lanes). */
 import type { Position } from '../logic/types'
+import '../styles/base.css'
 withDefaults(defineProps<{ lane: Position | null; size?: number }>(), { size: 18 })
 </script>
 <template><svg class="iv-role-icon" :width="size" :height="size" viewBox="0 0 34 34" aria-hidden="true" style="flex-shrink:0"><g v-if="lane === 'TOP'">

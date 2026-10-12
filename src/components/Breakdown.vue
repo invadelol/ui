@@ -4,6 +4,8 @@ import { useFormat, useInvadeUi, useNames } from '../context'
 import { relation } from '../logic/detail'
 import { tk } from '../logic/i18n'
 import type { MatchDetail, PlayerView } from '../logic/types'
+import '../styles/base.css'
+import '../styles/detail.css'
 
 /**
  * Every number of the game, compared. Three reads, from quickest to deepest:

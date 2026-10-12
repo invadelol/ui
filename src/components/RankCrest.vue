@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useInvadeUi } from '../context'
+import '../styles/base.css'
 
 /**
  * Riot's ranked crest for a tier. Small sizes use the flat mini crests bundled with the package

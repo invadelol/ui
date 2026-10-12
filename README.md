@@ -9,8 +9,10 @@ made here once and shows in both products.
 - **`@invadelol/ui/logic`**: the shared data model (`MatchSummary`, `MatchDetail`, `ProfileView`…),
   formatting, labels, the match story and the adapters from invade.lol's stored matches and
   profiles (`fromCoreMatch()`, `profileFromCore()`, `playedWithFromCore()`). Plain TypeScript, no Vue.
-- **CSS**: `tokens.css` (design tokens, fonts, themes) and `style.css` (everything the components
-  draw). Every class starts with `iv-`, so it sits next to Tailwind or any other CSS.
+- **CSS**: each component imports its own styles, so a host's bundler loads them with the
+  component; `tokens.css` (design tokens, fonts, the dark theme), `tokens-light.css` (the light
+  theme) and `style.css` (every component's styles in one file) ship apart. Every class starts with
+  `iv-`, so it sits next to Tailwind or any other CSS.
 
 ## What's in
 
@@ -49,7 +51,7 @@ The desktop app wraps this as `pnpm ui:sync` (its `scripts/sync-ui.mjs`, from `.
 ```ts
 import { createInvadeUi } from '@invadelol/ui'
 import '@invadelol/ui/tokens.css'
-import '@invadelol/ui/style.css'
+import '@invadelol/ui/tokens-light.css' // only for the light theme (see Theming)
 
 app.use(
   createInvadeUi({
@@ -68,6 +70,14 @@ app.use(
 `provideInvadeUi(app, options)` does the same without the plugin form. Every option has a default
 (English, no images, inert links), so a view always renders. Put the views inside an element with
 the `iv-root` class (or set the same font and colour on the page).
+
+The components bring their own styles (`sideEffects` keeps them through tree shaking): a window
+that shows an icon loads the icon's few rules, not the match detail's. With server rendering, the
+server build bundles the package (Vite: `ssr.noExternal: ['@invadelol/ui']`), as Node cannot import
+CSS. A host that wants every style at once, or draws the CSS-only primitives (`.iv-badge`,
+`.iv-table`, `.iv-fig`…) in its own markup, imports `@invadelol/ui/style.css` instead and resolves
+the components' CSS imports to nothing (invade.lol does, to put the styles in a CSS layer: its
+`vite.config.ts`).
 
 **Desktop app** (`src/ui.ts` in the app): `t` / `locale` from its i18n, `assetUrl` from
 `https://invade.lol/cdn/<patch>/…` (pinned to its bundled data's patch, so the WebView keeps every
@@ -123,9 +133,10 @@ key the package uses is listed in `@invadelol/ui/keys.json`, for the hosts' loca
 
 ## Theming
 
-Dark is the default (the desktop app only has it). Light: `data-theme="light"` on `<html>` (or
-`.iv-light` on any element); `data-theme="system"` follows the system; `.iv-dark` shows a dark
-piece on a light page. Tokens keep their semantic names (`--surface-1`, `--text-2`, `--win`, `--loss`, `--brand`…).
+Dark is the default and all of `tokens.css` (the desktop app only has it). The light theme is
+`tokens-light.css`, imported after it: `data-theme="light"` on `<html>` (or `.iv-light` on any
+element); `data-theme="system"` follows the system; `.iv-dark` shows a dark piece on a light page.
+Tokens keep their semantic names (`--surface-1`, `--text-2`, `--win`, `--loss`, `--brand`…).
 
 ## Development
 
@@ -133,7 +144,8 @@ piece on a light page. Tokens keep their semantic names (`--surface-1`, `--text-
 pnpm install
 pnpm story:dev     # Histoire: every component with fixtures, light and dark (toolbar switch)
 pnpm typecheck
-pnpm build         # dist/: index.js, logic.js, types, style.css, tokens.css, fonts, keys.json
+pnpm build         # dist/: index.js, logic.js, a module and its CSS per component, types,
+                   # style.css, tokens.css, tokens-light.css, fonts, keys.json
 pnpm story:build   # the static preview, in .histoire/dist
 ```
 

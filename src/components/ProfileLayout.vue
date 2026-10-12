@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import MatchRowSkeleton from './MatchRowSkeleton.vue'
+import '../styles/base.css'
+import '../styles/primitives.css'
+import '../styles/profile.css'
 
 /**
  * The profile page's frame: the header band on top, then the side panels beside the feed (the

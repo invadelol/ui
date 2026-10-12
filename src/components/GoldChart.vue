@@ -6,6 +6,9 @@ import { tk } from '../logic/i18n'
 import { leadFor, storyOf } from '../logic/story'
 import type { MatchDetail, PlayerView, TimelineView } from '../logic/types'
 import ObjectiveIcon from './ObjectiveIcon.vue'
+import '../styles/base.css'
+import '../styles/primitives.css'
+import '../styles/detail.css'
 
 /**
  * All ten players over the game, on one chart. Lines are faint by default; the selected player

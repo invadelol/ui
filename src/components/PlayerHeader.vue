@@ -5,6 +5,9 @@ import { count, rankLabel, tierColor } from '../logic/labels'
 import type { MatchSummary, ProfileView, Rank } from '../logic/types'
 import Icon from './Icon.vue'
 import RankCrest from './RankCrest.vue'
+import '../styles/base.css'
+import '../styles/primitives.css'
+import '../styles/profile.css'
 
 /**
  * Who the player is and where they stand, in one band: icon, Riot ID, level and last game, and

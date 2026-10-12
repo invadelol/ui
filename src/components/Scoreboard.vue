@@ -8,6 +8,9 @@ import type { MatchDetail, PlayerView, TeamView } from '../logic/types'
 import Link from './Link.vue'
 import ObjectiveIcon, { type ObjectiveIconName } from './ObjectiveIcon.vue'
 import PerfDial from './PerfDial.vue'
+import '../styles/base.css'
+import '../styles/primitives.css'
+import '../styles/detail.css'
 
 /**
  * Both teams in one table, the viewed player's team first. The team line carries the result

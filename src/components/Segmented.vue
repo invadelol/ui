@@ -1,4 +1,7 @@
 <script setup lang="ts" generic="Id extends string | number">
+import '../styles/base.css'
+import '../styles/primitives.css'
+
 /** A segmented control (filters, sorts, chart metrics); `sm` for panel and chart heads. */
 withDefaults(defineProps<{ options: readonly { id: Id; label: string }[]; size?: 'md' | 'sm' }>(), { size: 'md' })
 const model = defineModel<Id>({ required: true })

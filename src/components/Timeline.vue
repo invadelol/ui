@@ -8,6 +8,9 @@ import { FIGHT_GAP, PHASES, involves, isEpic, leadFor, scoreAt, storyOf, valueAt
 import type { Fight, GameEvent, KillEvent, ObjectiveEvent, PhaseId } from '../logic/story'
 import type { MatchDetail, Objective, PlayerView, TimelineView } from '../logic/types'
 import ObjectiveIcon from './ObjectiveIcon.vue'
+import '../styles/base.css'
+import '../styles/primitives.css'
+import '../styles/detail.css'
 
 /**
  * The game as a story told on one rail. By default it is the selected player's story (their

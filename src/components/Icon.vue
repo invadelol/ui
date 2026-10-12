@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import '../styles/base.css'
+
 /**
  * Line icons (24 × 24 grid, 1.8 stroke), inlined: no icon font, no request, a few hundred bytes
  * each. Paths follow the Lucide set (ISC licence).
