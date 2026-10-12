@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import '../styles/base.css'
+import '../styles/primitives.css'
+
 /** A panel: one topic, with an optional head (title, `meta` text, then the `head` slot on the right). */
 defineProps<{ title?: string; meta?: string }>()
 </script>

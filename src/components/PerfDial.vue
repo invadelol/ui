@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { tk } from '../logic/i18n'
 import { useFormat, useInvadeUi } from '../context'
+import '../styles/base.css'
 
 /**
  * The performance indicator: a dial open at the bottom, the Invade score (0‥100) in its centre and

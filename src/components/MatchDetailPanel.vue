@@ -11,6 +11,9 @@ import Breakdown from './Breakdown.vue'
 import GoldChart from './GoldChart.vue'
 import Timeline from './Timeline.vue'
 import BuildTab from './BuildTab.vue'
+import '../styles/base.css'
+import '../styles/primitives.css'
+import '../styles/detail.css'
 
 /**
  * "Why did this game go this way?" The row right above already says the result, queue, duration

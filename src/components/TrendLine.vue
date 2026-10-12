@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
+import '../styles/base.css'
 
 /**
  * A straight-segment line: the player's series in brand, an

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Icon from './Icon.vue'
 import { useInvadeUi } from '../context'
+import '../styles/base.css'
 
 /** A star that saves something to favorites: a ghost icon button, gold once saved. `label` names what it saves. */
 defineProps<{ saved: boolean; label: string }>()

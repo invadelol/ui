@@ -3,6 +3,8 @@ import { computed } from 'vue'
 import { useInvadeUi, useNames } from '../context'
 import { positionName } from '../logic/labels'
 import type { MatchDetail, PlayerView } from '../logic/types'
+import '../styles/base.css'
+import '../styles/detail.css'
 
 /** Picks the player a detail tab is about: the viewed player's team first, the other after a gap. */
 const props = defineProps<{ detail: MatchDetail; selected: number; me?: PlayerView }>()

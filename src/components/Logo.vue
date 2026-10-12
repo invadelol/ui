@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import '../styles/base.css'
+
 /** The Invade glyph, cropped to its bounds, optionally with the wordmark. */
 withDefaults(defineProps<{ size?: number; word?: boolean }>(), { size: 28, word: false })
 </script>

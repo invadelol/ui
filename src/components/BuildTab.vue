@@ -6,6 +6,9 @@ import { RUNE_SLOTS } from '../logic/detail'
 import { tk } from '../logic/i18n'
 import type { MatchDetail, PlayerView } from '../logic/types'
 import PlayerPicker from './PlayerPicker.vue'
+import '../styles/base.css'
+import '../styles/primitives.css'
+import '../styles/detail.css'
 
 /**
  * One player's kit: the rune page with the runes not taken dimmed, final items and summoner

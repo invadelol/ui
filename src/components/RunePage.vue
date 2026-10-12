@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useNames } from '../context'
+import '../styles/base.css'
 
 /** A rune page: `p`/`s` start with the tree id followed by the picked runes, `m` = stat shards. */
 const props = defineProps<{ page: { p: number[]; s: number[]; m: number[] } }>()

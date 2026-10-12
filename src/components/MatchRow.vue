@@ -7,6 +7,8 @@ import type { Badge, MatchSummary, ScoreRow } from '../logic/types'
 import Icon from './Icon.vue'
 import PerfDial from './PerfDial.vue'
 import StarButton from './StarButton.vue'
+import '../styles/base.css'
+import '../styles/primitives.css'
 
 /**
  * One game in one line. The result is the row's left edge and tint, nothing else; figures stay

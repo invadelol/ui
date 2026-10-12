@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useNames } from '../context'
+import '../styles/base.css'
 
 /**
  * A champion portrait (square art), cropped slightly so Riot's baked border disappears. `level`

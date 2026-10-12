@@ -5,6 +5,9 @@ import { signedLp } from '../logic/format'
 import { count, rankLabel, tierColor } from '../logic/labels'
 import type { LpPoint, PlayerCard } from '../logic/types'
 import RankCrest from './RankCrest.vue'
+import '../styles/base.css'
+import '../styles/primitives.css'
+import '../styles/profile.css'
 
 /**
  * LP history (the desktop app records a snapshot of its own accounts whenever the rank

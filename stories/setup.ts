@@ -5,6 +5,7 @@
 import { defineSetupVue3 } from '@histoire/plugin-vue'
 import { provideInvadeUi, type AssetKind, type NameKind } from '../src'
 import '../src/styles/tokens.css'
+import '../src/styles/tokens-light.css'
 import './stories.css'
 import champions from './data/champions.json'
 import runes from './data/runes.json'

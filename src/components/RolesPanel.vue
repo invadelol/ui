@@ -4,6 +4,9 @@ import { useFormat, useInvadeUi } from '../context'
 import { count, positionName } from '../logic/labels'
 import type { Position } from '../logic/types'
 import RoleIcon from './RoleIcon.vue'
+import '../styles/base.css'
+import '../styles/primitives.css'
+import '../styles/profile.css'
 
 /** Positions played on Summoner's Rift over the loaded games. A row filters the feed to that role. */
 const props = defineProps<{ lanes: [Position, number][] }>()
