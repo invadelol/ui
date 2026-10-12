@@ -1008,6 +1008,13 @@ button.iv-sb-link:hover:not(:disabled) {
   width: 22px;
   height: 22px;
 }
+.iv-bd-tree.second .iv-bd-shards img {
+  width: 18px;
+  height: 18px;
+  padding: 1px;
+  border-radius: 50%;
+  background: var(--well);
+}
 .iv-bd-slot img.off {
   opacity: 0.22;
   filter: grayscale(1);
