@@ -11,16 +11,16 @@ import '../styles/primitives.css'
 import '../styles/detail.css'
 
 /**
- * One player's kit: the rune page with the runes not taken dimmed, final items and summoner
- * spells, and the facts no other tab shows (wards, crowd control, objectives, sprees, leads at
- * 15). A fact the source does not record is left out. Match histories keep no purchase or skill
- * order for these games.
+ * One player's kit: the rune page with the runes not taken dimmed and its stat shards (where the
+ * source keeps them), final items and summoner spells, and the facts no other tab shows (wards,
+ * crowd control, objectives, sprees, leads at 15). A fact the source does not record is left out.
+ * The skill order is in the player's scoreboard detail.
  */
 const props = defineProps<{ detail: MatchDetail; selected: number; me?: PlayerView }>()
 const emit = defineEmits<{ select: [index: number] }>()
 const { t } = useInvadeUi()
 const { compact, signedGold } = useFormat()
-const { itemIcon, runeIcon, runeName, spellIcon, spellName, styleIcon, styleName } = useNames()
+const { itemIcon, itemName, runeIcon, runeName, spellIcon, spellName, styleIcon, styleName } = useNames()
 
 const p = computed(() => props.detail.players[props.selected])
 const taken = computed(() => new Set(p.value.perks))
@@ -71,13 +71,18 @@ const facts = computed(() => {
             <img v-for="id in tree.fallback" :key="id" :src="runeIcon(id)" :alt="runeName(id)" :title="runeName(id)" @error="hideBroken" />
           </div>
         </div>
+        <div v-if="p.shards" class="iv-bd-tree second">
+          <div class="iv-bd-slot iv-bd-shards">
+            <img v-for="(id, i) in p.shards" :key="i" :src="runeIcon(id)" :alt="runeName(id)" :title="runeName(id)" @error="hideBroken" />
+          </div>
+        </div>
       </section>
 
       <section class="iv-bd-kit">
         <h4 class="iv-label">{{ t('Items') }}</h4>
         <div class="iv-bd-items">
           <template v-for="(id, i) in p.items" :key="i">
-            <img v-if="id" :src="itemIcon(id)" alt="" :class="{ trinket: i === 6 }" @error="hideBroken" />
+            <img v-if="id" :src="itemIcon(id)" :alt="itemName(id)" :title="itemName(id)" :class="{ trinket: i === 6 }" @error="hideBroken" />
             <i v-else :class="{ trinket: i === 6 }" />
           </template>
         </div>

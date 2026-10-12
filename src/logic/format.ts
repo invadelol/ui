@@ -38,12 +38,12 @@ export function compact(n: number, locale = 'en'): string {
 
 /** Placement as an ordinal in the UI language: "3rd" (en), "3e" (fr), "#3" elsewhere. */
 export function ordinal(n: number, locale = 'en'): string {
-  if (locale === 'en') {
+  if (locale.startsWith('en')) {
     const tens = n % 100
     const suffix = tens >= 11 && tens <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[n % 10] ?? 'th'
     return `${n}${suffix}`
   }
-  if (locale === 'fr') return n === 1 ? '1er' : `${n}e`
+  if (locale.startsWith('fr')) return n === 1 ? '1er' : `${n}e`
   return `#${n}`
 }
 
