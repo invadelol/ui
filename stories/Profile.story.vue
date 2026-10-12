@@ -10,14 +10,25 @@ const role = shallowRef<Position | ''>('')
 const order = shallowRef<'recent' | 'champion'>('recent')
 const lp = computed(() => lpByGame(profile.lp, games))
 
-/** Older pages: the fixtures again, a week further back each time, six pages in all. */
+/**
+ * Older pages: the fixtures again, a week further back each time, eight pages in all. The first
+ * four are "stored" (they load as fast as the list scrolls); past them the "server" holds a page
+ * back for 20 s every other page, as invade.lol does once its Riot budget is spent: the list just
+ * ends there, and scrolling back to the end after the window loads the next one.
+ */
 const feed = shallowRef<MatchSummary[]>(games)
 const more = shallowRef(true)
-async function loadMore() {
-  await new Promise((r) => setTimeout(r, 700))
+const heldOnce = new Set<number>()
+async function loadMore(): Promise<void | { retryAfterMs: number }> {
   const page = feed.value.length / games.length
+  const riot = page >= 4
+  await new Promise((r) => setTimeout(r, riot ? 700 : 150))
+  if (riot && page % 2 === 0 && !heldOnce.has(page)) {
+    heldOnce.add(page)
+    return { retryAfterMs: 20_000 }
+  }
   feed.value = [...feed.value, ...games.map((g) => ({ ...g, gameId: g.gameId + page * 1000, creation: g.creation - page * 7 * 86_400_000 }))]
-  more.value = page < 5
+  more.value = page < 7
 }
 </script>
 

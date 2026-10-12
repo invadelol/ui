@@ -17,7 +17,8 @@ import '../styles/profile.css'
  * The feed: one filter bar, one summary line of what it shows (record, KDA, form), then the
  * games grouped by day (or by champion). A row opens the host's `detail` slot right below it
  * (`{ game }`: the host loads the game and renders `MatchDetail`). With `loadMore`, older games
- * load as the end comes into view (`MoreMatches`, paced per player).
+ * load as the end comes into view (`MoreMatches`): stored pages freely, and the list ends quietly when
+ * the source holds older games back.
  */
 const props = withDefaults(
   defineProps<{
@@ -34,8 +35,11 @@ const props = withDefaults(
     private?: boolean
     /** Older games may exist (`loadMore` asks for them). */
     more?: boolean
-    /** Loads the next page of older games into `games` (see `MoreMatches`). */
-    loadMore?: () => Promise<void | { wait: number }>
+    /**
+     * Loads the next page of older games into `games`; resolves `{ retryAfterMs }` when the source
+     * held older games back (see `MoreMatches`).
+     */
+    loadMore?: () => Promise<void | { retryAfterMs: number }>
     /** A game to open and scroll to once it is in the list (a deep link). */
     focus?: number | null
   }>(),
