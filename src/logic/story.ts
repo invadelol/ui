@@ -4,7 +4,7 @@
  * the game, and the state of the game at any second (kill score, gold lead). Pure data: the
  * wording lives in the components.
  */
-import type { Kill, MatchDetail, Objective, PlayerView, TimelineView } from './types'
+import type { Kill, MatchDetail, Objective, PlayerView, TimelineView } from './types.js'
 
 /** Kills chained less than this many seconds apart are one fight. */
 export const FIGHT_GAP = 15

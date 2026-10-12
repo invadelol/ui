@@ -1,10 +1,12 @@
 /**
  * invade.lol → the shared model. The website stores matches in its own shape (`CoreMatch`, as its
- * API serves them); these adapters turn one into the `MatchDetail` / `MatchSummary` / `Rank` every
- * view reads, so the website renders the same components as the desktop app. Nothing is estimated:
- * a value the stored match does not carry is `null` (or left out), and views hide its row.
+ * API serves them); these adapters turn them into the `MatchDetail` / `MatchSummary` / `Rank` /
+ * `ProfileView` / `PlayedWith` every view reads, so the website renders the same components as the
+ * desktop app. Nothing is estimated: a value the stored match does not carry is `null` (or left
+ * out), and views hide its row.
  */
-import type { Badge, Kill, MatchDetail, MatchSummary, Objective, PlayerView, Position, Rank, TeamView, TimelineView } from './types'
+import { rankValue } from './labels.js'
+import type { Badge, ChampRow, ChampTotals, Kill, LpPoint, Mastery, MatchDetail, MatchSummary, Mate, Objective, PlayedWith, PlayerView, Position, ProfileView, Rank, TeamView, TimelineView } from './types.js'
 
 // --- invade.lol's shapes (inertia/lib/types.ts), the fields read here --------------------------------
 
@@ -14,7 +16,8 @@ export interface CoreParticipant {
   tagLine: string
   championId: number
   teamId: number
-  win: boolean
+  /** ClickHouse's Bool arrives as 0 / 1. */
+  win: boolean | number
   kills: number
   deaths: number
   assists: number
@@ -38,6 +41,8 @@ export interface CoreParticipant {
   goldEarned: number
   wardsPlaced: number
   wardsKilled: number
+  /** The icon the player had in this game, when stored. */
+  profileIconId?: number
 }
 
 export interface CoreTimelineEntry {
@@ -69,7 +74,8 @@ export interface CoreEvent {
 
 export interface CoreMatch {
   matchId: string
-  gameStartMs: number
+  /** Epoch ms; ClickHouse's UInt64 arrives as a string. */
+  gameStartMs: number | string
   /** Seconds. */
   duration: number
   queueId: number
@@ -104,6 +110,30 @@ export interface CoreRank {
   losses: number | null
 }
 
+/** A row of the rank history: when it was read. */
+export interface CoreRankSnapshot extends CoreRank {
+  /** ISO date. */
+  fetchedAt: string
+}
+
+export interface CoreSummoner {
+  puuid: string
+  gameName: string
+  tagLine: string
+  profileIconId: number | null
+  summonerLevel: number | null
+}
+
+/** What invade.lol knows of a player: its summoner, ranks, mastery and the games loaded so far. */
+export interface CoreProfile {
+  summoner: CoreSummoner
+  /** Current ranks per queue and every rank read, newest first. Null while unknown. */
+  ranks: { current: CoreRank[]; history: CoreRankSnapshot[] } | null
+  mastery: Mastery[]
+  /** The loaded games, newest first (`summaryOf` each stored match). */
+  games: MatchSummary[]
+}
+
 export interface FromCoreOptions {
   /** Invade score per puuid, 0‥100 (invade.lol's `lobbyScores`). Ranks, MVP and ACE follow from it. */
   scores?: Record<string, number>
@@ -116,6 +146,9 @@ const BADGE_KEYS = new Set<string>(['carry_damage', 'tank', 'vision', 'cc', 'obj
 /** Below five minutes a game is a remake. */
 const REMAKE = 300
 const FRAME_15 = 15 * 60 * 1000
+
+/** Riot's `teamPosition` (`MIDDLE`, `UTILITY`…) as a position; null in modes without lanes. */
+export const positionOf = (riot: string | null | undefined): Position | null => POSITION[riot ?? ''] ?? null
 
 /** `EUW1_7998180573` → 7998180573. */
 export const gameIdOf = (matchId: string) => Number(matchId.slice(matchId.lastIndexOf('_') + 1)) || 0
@@ -205,7 +238,7 @@ export function fromCoreMatch(match: CoreMatch, opts: FromCoreOptions = {}): Mat
     return {
       participantId: pid(p),
       teamId: p.teamId,
-      win: p.win,
+      win: !!p.win,
       puuid: p.puuid,
       gameName: p.gameName,
       tagLine: p.tagLine,
@@ -303,7 +336,7 @@ export function fromCoreMatch(match: CoreMatch, opts: FromCoreOptions = {}): Mat
 
   return {
     gameId: gameIdOf(match.matchId),
-    creation: match.gameStartMs,
+    creation: Number(match.gameStartMs),
     duration: match.duration,
     queueId: match.queueId,
     mapId: match.mapId,
@@ -372,3 +405,108 @@ export const rankFromCore = (r: CoreRank): Rank => ({
   provisional: false,
   previous: '',
 })
+
+const QUEUE_TYPES = { solo: 'RANKED_SOLO_5x5', flex: 'RANKED_FLEX_SR' } as const
+
+/**
+ * A profile as invade.lol knows it. Champions, roles and recent form are read from the loaded
+ * games, as the app does (the table grows as older games load); the LP line from the stored rank
+ * history. invade.lol has no signed-in viewer, so nobody is "you" here.
+ */
+export function profileFromCore({ summoner, ranks, mastery, games }: CoreProfile): ProfileView {
+  const current = (queue: keyof typeof QUEUE_TYPES) => {
+    const r = ranks?.current.find((x) => x.queueType === QUEUE_TYPES[queue] && x.tier)
+    return r ? rankFromCore(r) : null
+  }
+  const played = games.filter((g) => !g.remake)
+
+  const byChampion = new Map<number, ChampRow>()
+  const lanes = new Map<Position, number>()
+  for (const g of played) {
+    const c = byChampion.get(g.championId) ?? { championId: g.championId, games: 0, wins: 0, kills: 0, deaths: 0, assists: 0, cs: 0, seconds: 0, damage: 0, gold: 0, vision: 0 }
+    c.games++
+    if (g.win) c.wins++
+    c.kills += g.kills
+    c.deaths += g.deaths
+    c.assists += g.assists
+    c.cs += g.cs
+    c.seconds += g.duration
+    c.damage += g.damage
+    c.gold += g.gold
+    c.vision += g.vision
+    byChampion.set(g.championId, c)
+    if (g.lane) lanes.set(g.lane, (lanes.get(g.lane) ?? 0) + 1)
+  }
+  const champions = [...byChampion.values()].sort((a, b) => b.games - a.games || b.wins - a.wins)
+  const totals = (list: ChampRow[]) => {
+    const sum = (f: (c: ChampRow) => number) => list.reduce((s, c) => s + f(c), 0)
+    return { games: sum((c) => c.games), wins: sum((c) => c.wins), kills: sum((c) => c.kills), deaths: sum((c) => c.deaths), assists: sum((c) => c.assists), cs: sum((c) => c.cs), seconds: sum((c) => c.seconds) }
+  }
+  const results = played.map((g) => g.win)
+  const run = results.findIndex((w) => w !== results[0])
+  const streak = results.length ? (run < 0 ? results.length : run) * (results[0] ? 1 : -1) : 0
+  const byLane = [...lanes].sort((a, b) => b[1] - a[1])
+
+  const lp: LpPoint[] = (ranks?.history ?? [])
+    .flatMap((r) => {
+      const queue = r.queueType === QUEUE_TYPES.solo ? 'solo' : r.queueType === QUEUE_TYPES.flex ? 'flex' : null
+      const rank = rankFromCore(r)
+      const value = rankValue(rank)
+      const t = Date.parse(r.fetchedAt)
+      return queue && value !== null && t ? [{ t, queue, tier: rank.tier, division: rank.division, lp: rank.lp, wins: rank.wins, losses: rank.losses, value: Math.round(value * 100) } as LpPoint] : []
+    })
+    .sort((a, b) => a.t - b.t)
+
+  return {
+    card: {
+      puuid: summoner.puuid,
+      gameName: summoner.gameName,
+      tagLine: summoner.tagLine,
+      icon: summoner.profileIconId ?? 0,
+      level: summoner.summonerLevel ?? 0,
+      private: false,
+      solo: current('solo'),
+      flex: current('flex'),
+      recent: {
+        ...totals(champions),
+        results,
+        streak,
+        lanes: byLane,
+        champions: champions.map((c): ChampTotals => ({ championId: c.championId, games: c.games, wins: c.wins, kills: c.kills, deaths: c.deaths, assists: c.assists, cs: c.cs, seconds: c.seconds })),
+        ranked: played.filter((g) => g.queueId === 420).length,
+      },
+      mastery: [...mastery].sort((a, b) => b.championPoints - a.championPoints),
+      offline: false,
+    },
+    isSelf: false,
+    isOwn: false,
+    champions,
+    lanes: byLane,
+    lp,
+  }
+}
+
+/**
+ * The people a player queues with, from their loaded games: teammates seen in at least two of the
+ * latest 40 full games, the eight most frequent (the desktop app's rule). Names and icons are the
+ * ones of the last game together.
+ */
+export function playedWithFromCore(matches: readonly CoreMatch[], puuid: string): PlayedWith {
+  const mates = new Map<string, Mate>()
+  const full = matches.filter((m) => m.duration >= REMAKE && m.participants.some((p) => p.puuid === puuid))
+  const recent = [...full].sort((a, b) => Number(b.gameStartMs) - Number(a.gameStartMs)).slice(0, 40)
+  for (const m of recent) {
+    const team = m.participants.find((p) => p.puuid === puuid)!.teamId
+    for (const p of m.participants) {
+      if (!p.puuid || p.puuid === puuid || p.teamId !== team) continue
+      const mate = mates.get(p.puuid) ?? { puuid: p.puuid, gameName: p.gameName, tagLine: p.tagLine, icon: p.profileIconId ?? 0, games: 0, wins: 0, last: Number(m.gameStartMs) }
+      mate.games++
+      if (p.win) mate.wins++
+      mates.set(p.puuid, mate)
+    }
+  }
+  return {
+    mates: [...mates.values()].filter((m) => m.games >= 2).sort((a, b) => b.games - a.games || b.last - a.last).slice(0, 8),
+    games: recent.length,
+  }
+}

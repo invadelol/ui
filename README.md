@@ -7,8 +7,8 @@ made here once and shows in both products.
 - **Vue 3** components, data in by props, actions out by events. No data fetching, no routing,
   nothing desktop-specific: the host injects strings, image URLs and links.
 - **`@invadelol/ui/logic`**: the shared data model (`MatchSummary`, `MatchDetail`, `ProfileView`…),
-  formatting, labels, the match story and `fromCoreMatch()`, the adapter from invade.lol's stored
-  matches. Plain TypeScript, no Vue.
+  formatting, labels, the match story and the adapters from invade.lol's stored matches and
+  profiles (`fromCoreMatch()`, `profileFromCore()`, `playedWithFromCore()`). Plain TypeScript, no Vue.
 - **CSS**: `tokens.css` (design tokens, fonts, themes) and `style.css` (everything the components
   draw). Every class starts with `iv-`, so it sits next to Tailwind or any other CSS.
 
@@ -70,10 +70,11 @@ bundled `data/*.json`, `onOpen` navigates in place, `favorites` is the app's fav
 Inertia router. Stored matches go through the adapter:
 
 ```ts
-import { fromCoreMatch, summaryOf } from '@invadelol/ui/logic'
+import { fromCoreMatch, profileFromCore, summaryOf } from '@invadelol/ui/logic'
 
 const detail = fromCoreMatch(match, { scores: lobbyScores(match) }) // MatchDetail
 const row = summaryOf(detail, puuid, match.matchId) // MatchSummary for MatchRow / MatchList
+const profile = profileFromCore({ summoner, ranks, mastery, games }) // ProfileView for the profile views
 ```
 
 Data loading stays in the host: `MatchList` renders the open game through its `detail` slot

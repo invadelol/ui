@@ -1,9 +1,9 @@
 <script setup lang="ts">
-/** Position glyphs (Riot's lane marks). */
+/** Position glyphs (Riot's lane marks). Empty for no position (modes without lanes). */
 import type { Position } from '../logic/types'
-defineProps<{ lane: Position }>()
+withDefaults(defineProps<{ lane: Position | null; size?: number }>(), { size: 18 })
 </script>
-<template><svg class="iv-role-icon" width="18" height="18" viewBox="0 0 34 34" aria-hidden="true" style="flex-shrink:0"><g v-if="lane === 'TOP'">
+<template><svg class="iv-role-icon" :width="size" :height="size" viewBox="0 0 34 34" aria-hidden="true" style="flex-shrink:0"><g v-if="lane === 'TOP'">
   <path fill="currentColor" fill-rule="evenodd" opacity=".5" d="M21 14h-7v7h7v-7Zm5-3v15H11.014l-4 4H30V7.016Z"/>
   <path fill="currentColor" d="m4 4 .003 24.045 4.997-5V9h14l5.045-4.997Z"/>
 </g><g v-if="lane === 'JUNGLE'">

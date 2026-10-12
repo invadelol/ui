@@ -1,5 +1,5 @@
 /** LP won or lost per ranked game, matched from LP snapshots (the desktop app records them for own accounts). */
-import type { LpPoint, MatchSummary } from './types'
+import type { LpPoint, MatchSummary } from './types.js'
 
 const QUEUES = { solo: 420, flex: 440 } as const
 

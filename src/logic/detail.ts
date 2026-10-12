@@ -1,5 +1,5 @@
 /** Helpers shared by the match detail views. */
-import type { MatchDetail, PlayerView, TeamView } from './types'
+import type { MatchDetail, PlayerView, TeamView } from './types.js'
 
 /**
  * Colours are relative to the viewed player: them in brand, their team in the "good for you"
