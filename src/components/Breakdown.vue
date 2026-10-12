@@ -169,6 +169,7 @@ const teams = computed(() => {
       duelRow(t('Kills'), mine.kills, theirs.kills, plain),
       duelRow(t('Gold'), mine.gold, theirs.gold, compact),
       duelRow(t('Damage to champions'), mine.damage, theirs.damage, compact),
+      duelRow(t('Damage taken'), sum(mine.teamId, (p) => p.damageTaken), sum(theirs.teamId, (p) => p.damageTaken), compact),
       duelRow(t('CS'), sum(mine.teamId, (p) => p.cs), sum(theirs.teamId, (p) => p.cs), plain),
       duelRow(t('Vision score'), sum(mine.teamId, (p) => p.vision), sum(theirs.teamId, (p) => p.vision), plain),
       duelRow(t('Turrets'), mine.towers, theirs.towers, plain),
