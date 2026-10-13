@@ -4,6 +4,8 @@ The frontend shared by the [Invade](https://invade.lol) desktop app and invade.l
 (dark and light), primitives, and every view that displays a match or a profile. A UI change is
 made here once and shows in both products.
 
+**Design system:** [DESIGN.md](DESIGN.md) is the art direction for the app, invade.lol and its landing pages: layers, colour, type, recipes, charts, motion and a checklist. Read it before building anything new.
+
 - **Vue 3** components, data in by props, actions out by events. No data fetching, no routing,
   nothing desktop-specific: the host injects strings, image URLs and links.
 - **`@invadelol/ui/logic`**: the shared data model (`MatchSummary`, `MatchDetail`, `ProfileView`…),
