@@ -10,6 +10,9 @@ import '../styles/base.css'
  * so it gets a box of its own, wider than tall and faded at the edges, never over the text beside
  * it. An image that fails or is not that frame (a proxy placeholder) leaves the mini crest.
  * `size` is the crest's size; a host may override the emblem's with `--iv-crest`.
+ *
+ * A new tier (a queue switch, a filter) keeps the crest on screen until the next one is decoded,
+ * then swaps in one frame: it never blanks or fades on a change. Only the first emblem fades in.
  */
 const props = withDefaults(defineProps<{ tier?: string | null; size?: number; emblem?: boolean }>(), { tier: null, size: 20 })
 const ui = useInvadeUi()
@@ -19,13 +22,49 @@ const id = computed(() => (props.tier ?? '').toLowerCase().replace(/[^a-z]/g, ''
 const mini = computed(() => MINI[`../assets/ranks/${id.value}.svg`] ?? MINI['../assets/ranks/unranked.svg'])
 const src = computed(() => (props.emblem && id.value !== 'unranked' ? ui.assetUrl('rank', id.value) : undefined))
 
-/** null while loading, then whether the image is the 16:9 frame. */
+/** Loads and decodes `url` off screen; resolves with the image either way (it may have failed). */
+function preload(url: string): Promise<HTMLImageElement> {
+  const img = new Image()
+  img.src = url
+  return img.decode().then(
+    () => img,
+    () => img,
+  )
+}
+const canPreload = typeof Image !== 'undefined'
+
+/** The mini crest on screen: the next one waits until it is decoded. */
+const miniShown = shallowRef(mini.value)
+let miniAsk = 0
+watch(mini, (next) => {
+  const my = ++miniAsk
+  if (!canPreload) miniShown.value = next
+  else void preload(next).then(() => my === miniAsk && (miniShown.value = next))
+})
+
+/** The emblem on screen, and whether it is the 16:9 frame (null: the first one is still loading). */
+const shown = shallowRef(src.value)
 const ok = shallowRef<boolean | null>(null)
-watch(src, () => (ok.value = null))
+const frame = (i: HTMLImageElement) => i.naturalWidth >= i.naturalHeight * 1.5
+let ask = 0
+watch(src, (next) => {
+  const my = ++ask
+  // Nothing on screen yet (or no emblem): load in place, fading in as a first appearance.
+  if (!next || !shown.value || ok.value === null || !canPreload) {
+    shown.value = next
+    ok.value = null
+    return
+  }
+  void preload(next).then((i) => {
+    if (my !== ask) return
+    shown.value = next
+    ok.value = i.naturalWidth > 0 && frame(i)
+  })
+})
 const img = useTemplateRef<HTMLImageElement>('img')
 const check = () => {
   const i = img.value
-  if (i?.naturalWidth) ok.value = i.naturalWidth >= i.naturalHeight * 1.5
+  if (i?.naturalWidth) ok.value = frame(i)
 }
 // Loaded before hydration (a server-rendered page): no load event comes.
 onMounted(() => img.value?.complete && check())
@@ -33,10 +72,10 @@ onMounted(() => img.value?.complete && check())
 
 <template>
   <span v-if="src" class="iv-crest big" :class="{ ok }" :style="{ '--iv-size': `${size}px` }">
-    <img v-if="ok !== false" ref="img" :src="src" alt="" draggable="false" @load="check" @error="ok = false" />
-    <img v-else class="mini" :src="mini" alt="" draggable="false" />
+    <img v-if="ok !== false" ref="img" :src="shown" alt="" draggable="false" @load="check" @error="ok = false" />
+    <img v-else class="mini" :src="miniShown" alt="" draggable="false" />
   </span>
-  <img v-else class="iv-crest" :src="mini" :width="size" :height="Math.round(size * 0.76)" alt="" draggable="false" />
+  <img v-else class="iv-crest" :src="miniShown" :width="size" :height="Math.round(size * 0.76)" alt="" draggable="false" />
 </template>
 
 <style>

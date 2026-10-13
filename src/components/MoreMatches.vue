@@ -2,6 +2,7 @@
 import { nextTick, onBeforeUnmount, onMounted, shallowRef, watch } from 'vue'
 import { useInvadeUi } from '../context'
 import { endOfList } from '../logic/pager'
+import { useDelayedFlag } from '../stable'
 import Icon from './Icon.vue'
 import MatchRowSkeleton from './MatchRowSkeleton.vue'
 import '../styles/base.css'
@@ -15,7 +16,8 @@ import '../styles/profile.css'
  * when the source held older games back (invade.lol's Riot budget): the list then ends quietly,
  * with no countdown, and a later reach of the end after that window asks once more. It throws on
  * failure (Try again). `more`: older games may exist. Key it by player. `auto` false: one page per
- * tap instead.
+ * tap instead. Stored pages land before anything shows: skeleton rows appear only when a page is
+ * slow, so a filter that brings the end into view does not flash them.
  */
 const props = withDefaults(
   defineProps<{
@@ -31,6 +33,8 @@ const { t } = useInvadeUi()
 
 const end = endOfList()
 const state = shallowRef<'idle' | 'loading' | 'error'>('idle')
+/** A tap shows its skeleton at once; loading on its own, only once a page is slow. */
+const slow = useDelayedFlag(() => state.value === 'loading')
 const el = shallowRef<HTMLElement | null>(null)
 let visible = false
 let observer: IntersectionObserver | undefined
@@ -99,7 +103,8 @@ onBeforeUnmount(() => observer?.disconnect())
 
 <template>
   <div ref="el" class="iv-more" :aria-busy="state === 'loading'">
-    <MatchRowSkeleton v-if="state === 'loading'" :count="3" />
+    <MatchRowSkeleton v-if="state === 'loading' && (slow || !auto)" :count="3" />
+    <template v-else-if="state === 'loading'" />
     <p v-else-if="state === 'error'" class="iv-error" role="alert">
       <Icon name="x" :size="15" />{{ t('Older games could not be loaded.') }}
       <button type="button" class="iv-btn sm" @click="retry"><Icon name="refresh" :size="13" />{{ t('Try again') }}</button>

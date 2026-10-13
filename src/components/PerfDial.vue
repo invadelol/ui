@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, shallowRef, watch } from 'vue'
 import { tk } from '../logic/i18n'
 import { useFormat, useInvadeUi } from '../context'
+import { drawsIn, joinView } from '../entrance'
 import '../styles/base.css'
 
 /**
@@ -10,7 +11,9 @@ import '../styles/base.css'
  * (worst) through a muted Invade violet (an average game, ~40 on the score's real scale) to blue,
  * so most games read calm and only the extremes stand out. 80 and up is gold with a soft glow, 90
  * and up a brighter gold that glows a little more (a few games in a thousand). The figure stays
- * white (the text colour), gold from 80; MVP is gold. The arc draws in once.
+ * white (the text colour), gold from 80; MVP is gold. The arc draws in with the view's first paint
+ * only: a dial that appears later in the same view (a filter, an appended page, a late score) is
+ * simply there, so switching a filter never replays it.
  * `sm` (scoreboards, compact rows): a smaller dial, no placement. `score: null`: not scored yet.
  */
 const props = withDefaults(defineProps<{ score: number | null; rank?: number; tag?: '' | 'mvp' | 'ace'; size?: 'md' | 'sm' }>(), {
@@ -69,6 +72,14 @@ const ARC = (() => {
   }
   return `M${p(145)}A${R} ${R} 0 1 1 ${p(395)}`
 })()
+/** `still`: this arc appeared after the view's entrance, so it does not draw in. */
+joinView()
+const still = shallowRef(props.score !== null && !drawsIn())
+watch(
+  () => props.score === null,
+  (none) => void (none || (still.value = !drawsIn())),
+)
+
 /** Never a dot so short it reads as a glitch. */
 const len = computed(() => (Math.max(3, Math.min(100, props.score ?? 0)) / 100) * LEN)
 </script>
@@ -77,7 +88,7 @@ const len = computed(() => (Math.max(3, Math.min(100, props.score ?? 0)) / 100) 
   <span class="iv-dial" :class="[tier, { sm: size === 'sm', empty: score === null }]" :style="{ '--c': color }" :title="title" :aria-label="title" :role="title ? 'img' : undefined">
     <svg viewBox="0 0 40 40" aria-hidden="true">
       <path class="iv-dial-track" :d="ARC" />
-      <path v-if="score !== null" class="iv-dial-arc" :d="ARC" :stroke-dasharray="`${len} ${LEN}`" :style="{ '--len': len }" />
+      <path v-if="score !== null" class="iv-dial-arc" :class="{ still }" :d="ARC" :stroke-dasharray="`${len} ${LEN}`" :style="{ '--len': len }" />
     </svg>
     <b>{{ score ?? '–' }}</b>
     <small v-if="size === 'md' && place && score !== null" class="iv-dial-place" :class="tag">{{ place }}</small>
@@ -118,6 +129,9 @@ const len = computed(() => (Math.max(3, Math.min(100, props.score ?? 0)) / 100) 
   from {
     stroke-dashoffset: var(--len);
   }
+}
+.iv-dial-arc.still {
+  animation: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .iv-dial-arc {
