@@ -118,7 +118,8 @@ Anywhere (no plugin needed):
 - `MatchList`: filters, summary and day groups. Data loading stays in the host: a row opens the
   `detail` slot right below it (`<template #detail="{ game }">`), where the host loads the game and
   renders `MatchDetailPanel` (`detail: null` while loading, or a partial game it already has with
-  `loading`; `error` with a Try again). With
+  `loading`; `error` with a Try again). Its `actions` slot puts the host's own small buttons at
+  the end of the tab line (invade.lol's Copy link and match page). With
   `loadMore` (and `more`), older games load as the end of the list comes into view.
 - `MoreMatches`: that end of a list, on its own for a host's own list. As it comes into view it
   calls `load()` (the host appends the next page and sets `more`), and keeps loading while the end

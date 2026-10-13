@@ -25,6 +25,10 @@ import '../styles/detail.css'
  * message when it could not (with Try again, `retry`). A host that already has the scoreboard
  * (invade.lol's match list) passes it with `loading` while the rest comes: the tabs that need the
  * timeline wait for it, and nothing says the game has none.
+ *
+ * Slot `actions`: the host's own small buttons at the end of the tab line (invade.lol's Copy link
+ * and match page), `iv-btn sm ghost` with an icon. On a phone each keeps its icon: put its words
+ * in a `<span>` and give it a `title`.
  */
 const props = withDefaults(
   defineProps<{
@@ -109,6 +113,7 @@ const favorite = computed(() =>
           :label="`${t('Game')} · ${favorite.label}`"
           @toggle="ui.favorites!.toggle(favorite)"
         />
+        <span v-if="$slots.actions" class="iv-md-actions"><slot name="actions" /></span>
       </div>
       <div class="iv-md-body">
         <Scoreboard v-if="tab === 'scoreboard'" :detail="detail" :puuid="puuid" />

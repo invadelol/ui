@@ -37,6 +37,12 @@
 .iv-md-top .iv-md-star {
   margin: 0 -6px 3px -8px;
 }
+/* The host's buttons, on the tab text's line. */
+.iv-md-actions {
+  display: flex;
+  gap: 2px;
+  margin: 0 -9px 6px -8px;
+}
 .iv-md-body {
   padding-top: 12px;
 }
@@ -66,6 +72,21 @@
 }
 @container md (max-width: 700px) {
   .iv-md-meta {
+    display: none;
+  }
+}
+/* The host's buttons take the meta's room first, then keep only their icons. */
+@container md (max-width: 840px) {
+  .iv-md-top:has(.iv-md-actions) .iv-md-meta {
+    display: none;
+  }
+}
+@container md (max-width: 560px) {
+  .iv-md-actions .iv-btn {
+    width: 26px;
+    padding: 0;
+  }
+  .iv-md-actions .iv-btn > span {
     display: none;
   }
 }
@@ -2119,7 +2140,7 @@ button.iv-sb-link:hover:not(:disabled) {
   }
 }
 
-@container md (max-width: 640px) {
+@container md (max-width: 560px) {
   .iv-gch-head {
     flex-wrap: wrap;
     row-gap: 8px;
