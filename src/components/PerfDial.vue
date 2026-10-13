@@ -7,8 +7,10 @@ import '../styles/base.css'
 /**
  * The performance indicator: a dial open at the bottom, the Invade score (0‥100) in its centre and
  * the placement (MVP, ACE, 3rd…) in the opening. The arc is the score; its colour slides from red
- * (worst) through a muted Invade violet (middle) to blue (best), so most games read calm and only
- * the extremes stand out. The figure stays white (the text colour); MVP is gold. The arc draws in once.
+ * (worst) through a muted Invade violet (an average game, ~40 on the score's real scale) to blue,
+ * so most games read calm and only the extremes stand out. 80 and up is gold with a soft glow, 90
+ * and up a brighter gold that glows a little more (a few games in a thousand). The figure stays
+ * white (the text colour), gold from 80; MVP is gold. The arc draws in once.
  * `sm` (scoreboards, compact rows): a smaller dial, no placement. `score: null`: not scored yet.
  */
 const props = withDefaults(defineProps<{ score: number | null; rank?: number; tag?: '' | 'mvp' | 'ace'; size?: 'md' | 'sm' }>(), {
@@ -21,12 +23,17 @@ const { ordinal } = useFormat()
 
 /** Colour stops (score, rgb): --loss, a muted --brand, --win; linear in RGB in between. */
 const STOPS: [number, [number, number, number]][] = [
-  [25, [255, 93, 110]],
-  [57, [134, 124, 200]],
-  [92, [76, 155, 255]],
+  [12, [255, 93, 110]],
+  [42, [134, 124, 200]],
+  [76, [76, 155, 255]],
 ]
+/** From these the arc is gold (`--score-gold-rgb`), then brighter (`--score-peak-rgb`). */
+const GOLD = 80
+const PEAK = 90
+const tier = computed(() => (props.score === null ? '' : props.score >= PEAK ? 'peak' : props.score >= GOLD ? 'gold' : ''))
 const color = computed(() => {
   const s = props.score ?? 0
+  if (tier.value) return `var(--score-${tier.value}-rgb)`
   if (s <= STOPS[0][0]) return STOPS[0][1].join(' ')
   if (s >= STOPS[2][0]) return STOPS[2][1].join(' ')
   const [[a, ca], [b, cb]] = s < STOPS[1][0] ? [STOPS[0], STOPS[1]] : [STOPS[1], STOPS[2]]
@@ -35,10 +42,10 @@ const color = computed(() => {
 })
 
 const TIERS: [number, string][] = [
-  [85, tk('Exceptional game')],
+  [PEAK, tk('Exceptional game')],
   [70, tk('Great game')],
-  [55, tk('Good game')],
-  [40, tk('Average game')],
+  [52, tk('Good game')],
+  [30, tk('Average game')],
   [0, tk('Rough game')],
 ]
 const place = computed(() => (props.tag === 'mvp' ? t('MVP') : props.tag === 'ace' ? t('ACE') : props.rank ? ordinal(props.rank) : ''))
@@ -67,7 +74,7 @@ const len = computed(() => (Math.max(3, Math.min(100, props.score ?? 0)) / 100) 
 </script>
 
 <template>
-  <span class="iv-dial" :class="{ sm: size === 'sm', empty: score === null }" :style="{ '--c': color }" :title="title" :aria-label="title" :role="title ? 'img' : undefined">
+  <span class="iv-dial" :class="[tier, { sm: size === 'sm', empty: score === null }]" :style="{ '--c': color }" :title="title" :aria-label="title" :role="title ? 'img' : undefined">
     <svg viewBox="0 0 40 40" aria-hidden="true">
       <path class="iv-dial-track" :d="ARC" />
       <path v-if="score !== null" class="iv-dial-arc" :d="ARC" :stroke-dasharray="`${len} ${LEN}`" :style="{ '--len': len }" />
@@ -154,6 +161,27 @@ const len = computed(() => (Math.max(3, Math.min(100, props.score ?? 0)) / 100) 
 .iv-dial.sm b {
   margin-top: 0;
   font-size: 11.5px;
+}
+
+/* 80 and up: clean gold, a soft glow on the arc and the figure. 90 and up: brighter, glowing a
+   little further, the track faintly lit. Calm: no motion beyond the arc drawing in. */
+.iv-dial.gold .iv-dial-arc,
+.iv-dial.peak .iv-dial-arc {
+  filter: drop-shadow(0 0 1.6px rgb(var(--c) / var(--score-glow)));
+}
+.iv-dial.gold b,
+.iv-dial.peak b {
+  color: rgb(var(--c));
+  text-shadow: 0 0 8px rgb(var(--c) / calc(var(--score-glow) * 0.6));
+}
+.iv-dial.peak .iv-dial-arc {
+  filter: drop-shadow(0 0 1.6px rgb(var(--c) / var(--score-glow))) drop-shadow(0 0 5px rgb(var(--c) / calc(var(--score-glow) * 0.7)));
+}
+.iv-dial.peak .iv-dial-track {
+  stroke: rgb(var(--c) / 0.16);
+}
+.iv-dial.peak b {
+  text-shadow: 0 0 10px rgb(var(--c) / var(--score-glow));
 }
 
 /* Not scored yet: the empty dial, quiet. */
