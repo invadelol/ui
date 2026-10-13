@@ -13,16 +13,18 @@ const OBJECTIVES: ObjectiveIconName[] = ['tower', 'inhib', 'dragon', 'grubs', 'h
       <div class="story">
         <div class="story-row">
           <PerfDial :score="94" tag="mvp" />
-          <PerfDial :score="78" :rank="2" />
-          <PerfDial :score="57" :rank="5" />
-          <PerfDial :score="41" tag="ace" />
-          <PerfDial :score="18" :rank="10" />
+          <PerfDial :score="84" :rank="2" />
+          <PerfDial :score="66" :rank="3" />
+          <PerfDial :score="41" :rank="5" />
+          <PerfDial :score="27" tag="ace" />
+          <PerfDial :score="8" :rank="10" />
           <PerfDial :score="null" />
         </div>
         <div class="story-row">
           <PerfDial :score="94" size="sm" />
-          <PerfDial :score="57" size="sm" />
-          <PerfDial :score="18" size="sm" />
+          <PerfDial :score="84" size="sm" />
+          <PerfDial :score="41" size="sm" />
+          <PerfDial :score="8" size="sm" />
           <PerfDial :score="null" size="sm" />
         </div>
       </div>

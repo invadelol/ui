@@ -15,7 +15,7 @@ The values live in code, not here: `src/styles/tokens.css` (dark), `src/styles/t
 - **One idea per block.** Short titles, no paragraphs where a number or a row says it.
 
 **Never:**
-- neon, glow halos, gradient text, light leaks or blur-in text
+- neon, glow halos, gradient text, light leaks or blur-in text (one exception: a `PerfDial` at 80+, see §3)
 - tilted or floating 3D panels, splash-art backgrounds
 - red/green decoration
 - slogans and rhetorical triads ("Every game, timed, scored and clipped")
@@ -62,6 +62,7 @@ Use tokens only. Never write a raw hex or `rgb()` in a component, except a compu
 | `--brand` (`#7b6dff`), `--brand-hi`, `--brand-a08/16/28` | **Invade itself** | The one primary action, the active place (nav, tab), focus, the viewed player, the light, chart lines. **Never data.** |
 | `--win` / `--loss` (blue / red) | Good / bad **for you** | Win/loss, ally/enemy, ahead/behind, gaps (+0.31 / −0.5). Never decoration. |
 | `--gold-c` | Gold | Gold amounts, MVP |
+| `--score-gold-rgb`, `--score-peak-rgb`, `--score-glow` | An exceptional game | A `PerfDial` from 80 (clean gold) and 90 (brighter): the only glow in the system, soft and still |
 | `--tier-*` | Rank tiers | Rank names, crests and their soft tints only |
 | `--warn` | Warnings | The rare warning line |
 
