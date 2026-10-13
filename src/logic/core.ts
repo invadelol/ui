@@ -173,6 +173,12 @@ export const positionOf = (riot: string | null | undefined): Position | null => 
 /** `EUW1_7998180573` → 7998180573. */
 export const gameIdOf = (matchId: string) => Number(matchId.slice(matchId.lastIndexOf('_') + 1)) || 0
 
+/** A player's place in their team, top to support (Riot's `teamPosition` order); laneless after. */
+const laneRank = (p: CoreParticipant) => {
+  const k = Object.keys(POSITION).indexOf(p.position)
+  return k < 0 ? 5 : k
+}
+
 /** The enemy in the same lane, else the mirrored slot (modes where Riot records no position). */
 function laneOpponent(list: CoreParticipant[], p: CoreParticipant) {
   if (p.position) {
@@ -186,7 +192,8 @@ function laneOpponent(list: CoreParticipant[], p: CoreParticipant) {
 
 /** One stored match as the detail views read it. */
 export function fromCoreMatch(match: CoreMatch, opts: FromCoreOptions = {}): MatchDetail {
-  const list = match.participants
+  // invade.lol keeps a game's players in no particular order: each team reads top to support.
+  const list = [...match.participants].sort((a, b) => a.teamId - b.teamId || laneRank(a) - laneRank(b))
   const frames = match.timeline ?? []
   const events = match.events ?? []
   const hasEvents = events.length > 0
