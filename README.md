@@ -100,6 +100,16 @@ Inside a component under the plugin:
 - `useNames()`: names and image URLs of champions, items, spells and runes through the host's resolvers.
 - `gameFavorite(puuid, label, game)`: the key and contents of a game favorite, for a host's store.
 
+Anywhere (no plugin needed):
+
+- `useStableData(key, load)`: data that stays on screen until its replacement has arrived, for a
+  view that reloads when a filter changes. `data` keeps the last answer (and `key` what it was
+  for) while the next loads, then swaps in one go; the latest key wins; `load` may answer at once
+  (a cache hit), with no pending state. `busy` turns on only when an answer takes over 200 ms, for
+  a quiet hint (a slight dim); `ready`, `pending`, `error` and `reload()` cover the rest.
+- `useDelayedFlag(source, delay)`: true once `source` has been true for `delay` ms (200 by
+  default), so fast answers never show a loading hint.
+
 ### Views and slots
 
 - `ProfileLayout`: the profile frame. Slots `header`, `side` (panels beside the feed; above it in
@@ -115,7 +125,7 @@ Inside a component under the plugin:
   stays in view: stored games load as fast as the list scrolls, with no pacing in the package.
   Only the server limits pages it must ask Riot for; when it holds them back, `load()` resolves
   `{ retryAfterMs }` and the list simply ends there, with no countdown or message. A later reach of
-  the end after that window asks once more (no timer, no polling). Skeleton rows while loading,
+  the end after that window asks once more (no timer, no polling). Skeleton rows while a page is slow,
   "That's every tracked game" once `more` is false, an error with Try again when `load()` throws.
   Key it by player.
 - `MatchRow` is its own size container: it drops the matchup, then farm, then items as it narrows,

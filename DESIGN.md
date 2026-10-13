@@ -196,6 +196,8 @@ Before you write a new component, check this list and the package README. If two
   - pictures scale from ~0.9 and sharpen
   - figures count up, dial arcs and chart lines draw in
 - **Technique:** transforms and opacity only; one rAF loop + IntersectionObserver.
+- **Data that changes** (a filter, a rank, a role, a new minute): the last answer stays on screen until the next has arrived, then swaps in one go (`useStableData`). No empty frame, no skeleton, no half-updated mix; skeletons are for a first load only. An answer slower than 200 ms dims what it will replace to 0.85; a fast one shows nothing.
+- **Entrance motion plays once per view** (dial arcs drawing in): never again on a filter change, an appended page or a late score.
 - **No** bounce, flash, parallax circus or hover lifts.
 - **`prefers-reduced-motion`:** show the final state, static.
 
