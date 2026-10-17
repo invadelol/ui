@@ -13,7 +13,7 @@ import '../styles/detail.css'
 
 /**
  * One player's kit: the rune page with the runes not taken dimmed and its stat shards (where the
- * source keeps them), final items and summoner spells, and the facts no other tab shows (wards,
+ * source keeps them), final items (with the role-quest slot when it holds an item) and summoner spells, and the facts no other tab shows (wards,
  * crowd control, objectives, sprees, leads at 15). A fact the source does not record is left out.
  * Above them, the build path: every visit to the shop with its time, sold items greyed, where the
  * source keeps the purchases. The skill order is in the player's scoreboard detail.
@@ -145,6 +145,15 @@ const facts = computed(() => {
         <h4 class="iv-label">{{ t('Items') }}</h4>
         <div class="iv-bd-items">
           <template v-for="(id, i) in p.items" :key="i">
+            <!-- The role-quest reward: the seventh slot, before the trinket. -->
+            <img
+              v-if="i === 6 && p.roleItem"
+              class="role"
+              :src="itemIcon(p.roleItem)"
+              :alt="itemName(p.roleItem)"
+              :title="`${itemName(p.roleItem)} · ${t('Role quest reward')}`"
+              @error="hideBroken"
+            />
             <img v-if="id" :src="itemIcon(id)" :alt="itemName(id)" :title="itemName(id)" :class="{ trinket: i === 6 }" @error="hideBroken" />
             <i v-else :class="{ trinket: i === 6 }" />
           </template>

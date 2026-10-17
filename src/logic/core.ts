@@ -5,7 +5,7 @@
  * desktop app. Nothing is estimated: a value the stored match does not carry is `null` (or left
  * out), and views hide its row.
  */
-import { PINGS, SCORE_CATEGORIES } from './detail.js'
+import { PINGS, SCORE_CATEGORIES, roleSlot } from './detail.js'
 import { rankValue } from './labels.js'
 import type { Badge, ChampRow, ChampTotals, Kill, LpPoint, Mastery, MatchDetail, MatchSummary, Mate, Objective, Ping, PlayedWith, PlayerView, Position, ProfileView, Purchase, Rank, ScoreCategory, TeamView, TimelineView } from './types.js'
 
@@ -15,6 +15,8 @@ import type { Badge, ChampRow, ChampTotals, Kill, LpPoint, Mastery, MatchDetail,
 export type CorePings = Partial<Record<`${Ping}Pings`, number>>
 
 export interface CoreParticipant extends CorePings {
+  /** The role-quest slot (`roleBoundItem`): a 12xx token while the quest runs, then its reward. */
+  roleItem?: number
   puuid: string
   gameName: string
   tagLine: string
@@ -341,6 +343,7 @@ export function fromCoreMatch(match: CoreMatch, opts: FromCoreOptions = {}): Mat
       placement: 0,
       ...(shards.every(Boolean) ? { shards } : {}),
       ...(shop.size ? { purchases: shop.get(pid(p)) ?? [] } : {}),
+      ...(roleSlot(p.roleItem) ? { roleItem: p.roleItem } : {}),
       ...(pinged ? { pings: Object.fromEntries(PING_KINDS.map((k) => [k, p[`${k}Pings`] ?? 0])) as Record<Ping, number> } : {}),
     }
   })
