@@ -105,3 +105,4 @@ export function laneLead(t: TimelineView, i: number, j: number, minute: number):
   while (k + 1 < t.t.length && t.t[k + 1] <= s) k++
   return { minute, gold: t.gold[i][k] - t.gold[j][k], cs: t.cs[i][k] - t.cs[j][k], xp: t.xp[i][k] - t.xp[j][k] }
 }
+

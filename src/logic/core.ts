@@ -7,7 +7,7 @@
  */
 import { PINGS, SCORE_CATEGORIES } from './detail.js'
 import { rankValue } from './labels.js'
-import type { Badge, ChampRow, ChampTotals, Kill, LpPoint, Mastery, MatchDetail, MatchSummary, Mate, Objective, Ping, PlayedWith, PlayerView, Position, ProfileView, Rank, ScoreCategory, TeamView, TimelineView } from './types.js'
+import type { Badge, ChampRow, ChampTotals, Kill, LpPoint, Mastery, MatchDetail, MatchSummary, Mate, Objective, Ping, PlayedWith, PlayerView, Position, ProfileView, Purchase, Rank, ScoreCategory, TeamView, TimelineView } from './types.js'
 
 // --- invade.lol's shapes (inertia/lib/types.ts), the fields read here --------------------------------
 
@@ -87,6 +87,15 @@ export interface CoreEvent {
   y: number
 }
 
+export interface CoreShopEvent {
+  /** Seconds into the game. */
+  t: number
+  /** Participant id, as in the events. */
+  player: number
+  item: number
+  sold: boolean
+}
+
 export interface CoreMatch {
   matchId: string
   /** Epoch ms; ClickHouse's UInt64 arrives as a string. */
@@ -113,6 +122,8 @@ export interface CoreMatch {
   participants: CoreParticipant[]
   timeline?: CoreTimelineEntry[]
   events?: CoreEvent[]
+  /** Every item bought and sold (undos taken back), absent on games stored before they were kept. */
+  shop?: CoreShopEvent[]
   /** What a game from the desktop app could not report (`pings: false`: its zeros are not counts). */
   completeness?: { pings: boolean } | null
 }
@@ -232,6 +243,12 @@ export function fromCoreMatch(match: CoreMatch, opts: FromCoreOptions = {}): Mat
     .map((e) => ({ t: e.t, kind: e.kind, sub: e.sub, team: e.team, lane: e.lane, killer: e.killer }))
     .sort((a, b) => a.t - b.t)
   const firstBloodBy = kills[0]?.killer ?? 0
+  const shop = new Map<number, Purchase[]>()
+  for (const e of match.shop ?? []) {
+    if (!e.item) continue
+    if (!shop.has(e.player)) shop.set(e.player, [])
+    shop.get(e.player)!.push({ t: e.t, item: e.item, sold: e.sold })
+  }
 
   const teamKills = new Map<number, number>()
   const teamGold = new Map<number, number>()
@@ -323,6 +340,7 @@ export function fromCoreMatch(match: CoreMatch, opts: FromCoreOptions = {}): Mat
       augments: [],
       placement: 0,
       ...(shards.every(Boolean) ? { shards } : {}),
+      ...(shop.size ? { purchases: shop.get(pid(p)) ?? [] } : {}),
       ...(pinged ? { pings: Object.fromEntries(PING_KINDS.map((k) => [k, p[`${k}Pings`] ?? 0])) as Record<Ping, number> } : {}),
     }
   })
