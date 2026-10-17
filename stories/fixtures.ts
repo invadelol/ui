@@ -3,7 +3,7 @@
  * so the stories show what the app shows. Seeded, so every build draws the same games.
  */
 import { SCORE_CATEGORIES } from '../src/logic'
-import type { Badge, Kill, MatchDetail, MatchSummary, Objective, PlayedWith, PlayerCard, PlayerView, Position, ProfileView, TeamView } from '../src/logic'
+import type { Badge, Kill, MatchDetail, MatchSummary, Objective, PlayedWith, PlayerCard, PlayerView, Position, Purchase, ProfileView, TeamView } from '../src/logic'
 
 
 let seed = 7
@@ -277,6 +277,7 @@ export function detailOf(g: MatchSummary): MatchDetail {
       augments: [],
       placement: 0,
     })
+    players[players.length - 1].purchases = mockPurchases(players[players.length - 1].items)
   }
 
   // Team totals, shares, lane leads at 15.
@@ -595,3 +596,24 @@ export const playedWith: PlayedWith = {
 }
 
 export const scores = new Map(games.flatMap((g) => (g.score ? [[g.gameId, g.score] as const] : [])))
+
+/** A believable shop history ending on `items`: a start, one item per back, the start sold late. */
+function mockPurchases(items: number[]): Purchase[] {
+  const core = items.slice(0, 6).filter(Boolean)
+  const out: Purchase[] = [
+    { t: 0, item: 1055, sold: false },
+    { t: 1, item: 2003, sold: false },
+    { t: 1, item: 2003, sold: false },
+    { t: 2, item: 3340, sold: false },
+    { t: 205, item: 1036, sold: false },
+    { t: 206, item: 2003, sold: false },
+  ]
+  core.forEach((item, k) => {
+    const t = 380 + k * 290
+    if (k === 0) out.push({ t: t - 1, item: 3364, sold: false })
+    out.push({ t, item, sold: false })
+    if (k === 1) out.push({ t: t + 2, item: 2055, sold: false })
+    if (k === 2) out.push({ t: t - 3, item: 1055, sold: true })
+  })
+  return out
+}

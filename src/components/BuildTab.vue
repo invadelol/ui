@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useFormat, useInvadeUi, useNames } from '../context'
 import { hideBroken } from '../dom'
 import { RUNE_SLOTS } from '../logic/detail'
+import { shopVisits } from '../logic/shop'
 import { tk } from '../logic/i18n'
 import type { MatchDetail, PlayerView } from '../logic/types'
 import PlayerPicker from './PlayerPicker.vue'
@@ -14,15 +15,26 @@ import '../styles/detail.css'
  * One player's kit: the rune page with the runes not taken dimmed and its stat shards (where the
  * source keeps them), final items and summoner spells, and the facts no other tab shows (wards,
  * crowd control, objectives, sprees, leads at 15). A fact the source does not record is left out.
- * The skill order is in the player's scoreboard detail.
+ * Above them, the build path: every visit to the shop with its time, sold items greyed, where the
+ * source keeps the purchases. The skill order is in the player's scoreboard detail.
  */
 const props = defineProps<{ detail: MatchDetail; selected: number; me?: PlayerView }>()
 const emit = defineEmits<{ select: [index: number] }>()
 const { t } = useInvadeUi()
-const { compact, signedGold } = useFormat()
+const { compact, signedGold, mmss } = useFormat()
 const { itemIcon, itemName, runeIcon, runeName, spellIcon, spellName, styleIcon, styleName } = useNames()
 
 const p = computed(() => props.detail.players[props.selected])
+const visits = computed(() =>
+  (p.value.purchases?.length ? shopVisits(p.value.purchases) : []).map((v, k) => ({
+    ...v,
+    items: v.items.map((x, j) => ({ ...x, key: `${k}:${j}` })),
+  }))
+)
+/** The item whose details are open (`visit:item`): on hover with a mouse, on tap on touch. */
+const open = ref('')
+watch(() => props.selected, () => (open.value = ''))
+const toggle = (key: string) => (open.value = open.value === key ? '' : key)
 const taken = computed(() => new Set(p.value.perks))
 /** Primary tree: every slot; secondary tree: the three rows under the keystones. */
 const trees = computed(() => {
@@ -57,6 +69,57 @@ const facts = computed(() => {
 <template>
   <div class="iv-bd">
     <PlayerPicker :detail="detail" :selected="selected" :me="me" @select="emit('select', $event)" />
+    <section v-if="visits.length" class="iv-bd-path">
+      <h4 class="iv-label">{{ t('Build path') }}</h4>
+      <ol>
+        <li v-for="(v, k) in visits" :key="k">
+          <div class="iv-bd-visit">
+            <button
+              v-for="x in v.items.filter((y) => !y.sold)"
+              :key="x.key"
+              type="button"
+              class="iv-bd-buy"
+              :class="{ sold: x.sold, open: open === x.key }"
+              :aria-label="`${itemName(x.item)}, ${t(x.sold ? 'Sold at {t}' : 'Bought at {t}', { t: mmss(x.t) })}`"
+              @click="toggle(x.key)"
+              @mouseenter="open = x.key"
+              @mouseleave="open === x.key && (open = '')"
+              @blur="open === x.key && (open = '')"
+            >
+              <img :src="itemIcon(x.item)" alt="" @error="hideBroken" />
+              <span v-if="x.count > 1" class="iv-bd-count tabular">{{ x.count }}</span>
+              <span v-if="open === x.key" class="iv-bd-tip" role="tooltip">
+                <strong>{{ itemName(x.item) }}</strong>
+                <span class="tabular">{{ t(x.sold ? 'Sold at {t}' : 'Bought at {t}', { t: mmss(x.t) }) }}<template v-if="x.count > 1"> · ×{{ x.count }}</template></span>
+              </span>
+            </button>
+            <div v-if="v.items.some((x) => x.sold)" class="iv-bd-sold">
+              <span>{{ t('Sold') }}</span>
+              <button
+                v-for="x in v.items.filter((y) => y.sold)"
+                :key="x.key"
+                type="button"
+                class="iv-bd-buy"
+                :class="{ sold: x.sold, open: open === x.key }"
+                :aria-label="`${itemName(x.item)}, ${t(x.sold ? 'Sold at {t}' : 'Bought at {t}', { t: mmss(x.t) })}`"
+                @click="toggle(x.key)"
+                @mouseenter="open = x.key"
+                @mouseleave="open === x.key && (open = '')"
+                @blur="open === x.key && (open = '')"
+              >
+                <img :src="itemIcon(x.item)" alt="" @error="hideBroken" />
+                <span v-if="x.count > 1" class="iv-bd-count tabular">{{ x.count }}</span>
+                <span v-if="open === x.key" class="iv-bd-tip" role="tooltip">
+                  <strong>{{ itemName(x.item) }}</strong>
+                  <span class="tabular">{{ t(x.sold ? 'Sold at {t}' : 'Bought at {t}', { t: mmss(x.t) }) }}<template v-if="x.count > 1"> · ×{{ x.count }}</template></span>
+                </span>
+              </button>
+            </div>
+          </div>
+          <time class="tabular">{{ mmss(v.t) }}</time>
+        </li>
+      </ol>
+    </section>
     <div class="iv-bd-grid">
       <section v-if="trees.length && p.perks[0]" class="iv-bd-runes">
         <h4 class="iv-label">{{ t('Runes') }}</h4>

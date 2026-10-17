@@ -90,6 +90,7 @@ export function coreMatchOf(d: MatchDetail): { match: CoreMatch; options: FromCo
     })),
     timeline,
     events,
+    shop: d.players.flatMap((p) => (p.purchases ?? []).map((b) => ({ t: b.t, player: p.participantId, item: b.item, sold: b.sold }))),
   }
   // invade.lol scores 0‥100 with their breakdown (its own `scoreLobby`); the fixture's stand in.
   const scored = d.players.filter((p) => p.score !== null)

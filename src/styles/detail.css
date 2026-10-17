@@ -1226,6 +1226,8 @@ button.iv-sb-link:hover:not(:disabled) {
   gap: 16px;
 }
 .iv-bd-grid {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: max-content max-content minmax(0, 1fr);
   gap: 24px 48px;
@@ -1250,6 +1252,151 @@ button.iv-sb-link:hover:not(:disabled) {
   }
   .iv-bd-facts dl > div {
     gap: 12px;
+  }
+}
+/* The build path: visits to the shop left to right, wrapping; a chevron between two visits. Its
+   item details float over the sections below. */
+.iv-bd-path {
+  position: relative;
+  z-index: 2;
+}
+.iv-bd-path ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 14px 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.iv-bd-path li {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+}
+.iv-bd-path li + li {
+  position: relative;
+  padding-left: 16px;
+}
+.iv-bd-path li + li::before {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 15px;
+  width: 5px;
+  height: 5px;
+  border-top: 1.5px solid var(--text-4);
+  border-right: 1.5px solid var(--text-4);
+  transform: rotate(45deg);
+}
+.iv-bd-path time {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.iv-bd-visit {
+  display: flex;
+  gap: 3px;
+  padding: 4px;
+  background: var(--well);
+  border-radius: var(--r-sm);
+}
+.iv-bd-buy {
+  position: relative;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: var(--r-xs);
+  cursor: default;
+}
+.iv-bd-buy:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+.iv-bd-buy img {
+  display: block;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-xs);
+  transition: opacity var(--t-base) var(--ease), filter var(--t-base) var(--ease);
+}
+/* What a visit sold: after its buys, behind a hairline and a "Sold" word. */
+.iv-bd-sold {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 3px;
+  padding-left: 6px;
+  border-left: 1px solid var(--line-2);
+}
+.iv-bd-sold > span {
+  margin-right: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+/* A sold item: greyed, struck through. */
+.iv-bd-buy.sold img {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+.iv-bd-buy.sold::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 50%;
+  height: 1.5px;
+  background: var(--text-2);
+  transform: rotate(-45deg);
+  border-radius: 1px;
+}
+.iv-bd-count {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  min-width: 14px;
+  padding: 0 3px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 14px;
+  color: var(--text-1);
+  background: var(--solid-2);
+  border-radius: var(--r-xs);
+}
+.iv-bd-tip {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 26px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 2px;
+  width: max-content;
+  max-width: 200px;
+  padding: 7px 10px;
+  font-size: 12px;
+  text-align: left;
+  color: var(--text-3);
+  background: var(--solid-2);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-2);
+  pointer-events: none;
+  animation: iv-bd-tip var(--t-fast) var(--ease);
+}
+.iv-bd-tip strong {
+  font-weight: 600;
+  color: var(--text-1);
+}
+@keyframes iv-bd-tip {
+  from {
+    opacity: 0;
+  }
+}
+@media (pointer: coarse) {
+  .iv-bd-buy img {
+    width: 32px;
+    height: 32px;
   }
 }
 .iv-bd h4.iv-label {
