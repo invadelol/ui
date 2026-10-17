@@ -1463,8 +1463,14 @@ button.iv-sb-link:hover:not(:disabled) {
 .iv-bd-items i {
   background: var(--glint);
 }
-.iv-bd-items .trinket {
+.iv-bd-items .trinket,
+.iv-bd-items .role {
   margin-left: 6px;
+}
+/* The role slot sits apart, then the trinket right after it. */
+.iv-bd-items .role + .trinket,
+.iv-bd-items .role + i.trinket {
+  margin-left: 3px;
 }
 .iv-bd-spells {
   display: grid;

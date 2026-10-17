@@ -278,6 +278,12 @@ export function detailOf(g: MatchSummary): MatchDetail {
       placement: 0,
     })
     players[players.length - 1].purchases = mockPurchases(players[players.length - 1].items)
+    // A bot laner past the role quest: boots in the role slot, six other items.
+    if (pos === 'ADC') {
+      const adc = players[players.length - 1]
+      adc.roleItem = 3006
+      adc.items = adc.items.map((it, k) => (it === 3006 ? 3046 : k === 5 ? 3072 : it))
+    }
   }
 
   // Team totals, shares, lane leads at 15.

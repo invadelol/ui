@@ -69,6 +69,7 @@ export function coreMatchOf(d: MatchDetail): { match: CoreMatch; options: FromCo
       level: p.level,
       champLevel: p.level,
       items: p.items,
+      roleItem: p.roleItem,
       spells: p.spells,
       perks: { primary: p.styles[0], sub: p.styles[1], keystone: p.perks[0] },
       visionScore: p.vision,

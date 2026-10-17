@@ -106,3 +106,9 @@ export function laneLead(t: TimelineView, i: number, j: number, minute: number):
   return { minute, gold: t.gold[i][k] - t.gold[j][k], cs: t.cs[i][k] - t.cs[j][k], xp: t.xp[i][k] - t.xp[j][k] }
 }
 
+
+/**
+ * Whether the role-quest slot (`roleBoundItem`) holds a real item: not empty, not a quest token
+ * (12xx), not the support's ward stand-in (2055). A bot laner's finished boots move there.
+ */
+export const roleSlot = (id: number | undefined): id is number => !!id && !(id >= 1200 && id < 1300) && id !== 2055
