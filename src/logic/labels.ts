@@ -64,9 +64,16 @@ export const tierRgb = (tier: string | null | undefined): string | null => TIER_
 export const winRate = (x: Pick<Totals, 'games' | 'wins'>) => (x.games ? x.wins / x.games : 0)
 export const kda = (x: Pick<Totals, 'kills' | 'deaths' | 'assists'>) => (x.kills + x.assists) / Math.max(1, x.deaths)
 
+/** Missing queue metadata; fits the hosts' UInt16 storage without claiming queue 0 (Custom). */
+export const UNKNOWN_QUEUE = 0xffff
+
 const QUEUES: Record<number, string> = {
   0: tk('Custom'),
+  4: tk('Ranked Solo/Duo'),
+  6: tk('Ranked Premade'),
+  42: tk('Ranked Team'),
   400: tk('Normal Draft'),
+  410: tk('Ranked Dynamic'),
   420: tk('Ranked Solo/Duo'),
   430: tk('Normal Blind'),
   440: tk('Ranked Flex'),
@@ -91,10 +98,11 @@ const QUEUES: Record<number, string> = {
   1900: tk('URF'),
   2300: tk('Brawl'),
   2400: tk('ARAM: Mayhem'),
+  3140: tk('Practice Tool'),
 }
 
 /** Queue id → display name ("Ranked Solo/Duo"). */
-export const queueName = (id: number, t: Translate = english) => t(QUEUES[id] ?? tk('Custom'))
+export const queueName = (id: number, t: Translate = english) => t(QUEUES[id] ?? tk('Unknown queue'))
 
 /** Queue filters of match lists: queue ids per filter (`null`: every queue). */
 export const QUEUE_FILTERS = [
