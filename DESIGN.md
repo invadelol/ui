@@ -165,6 +165,7 @@ Label (`--text-3`, 12–13px) above the value (`.iv-fig`, 20–40px), then a uni
 | Need | Use |
 |---|---|
 | A game's score (0–100, place, MVP/ACE) | `PerfDial` |
+| How the player's teammates played (great → poor team) | `TeamBadge` (`teamRating`): win colour for a good team, loss colour for a bad one, ink for average |
 | A rank | `RankCrest` (small, inline) / `emblem` prop for the full emblem where designed |
 | LP over time | `LpGraph` |
 | A trend next to a figure | `TrendLine` (with `span` so noise reads gently) |

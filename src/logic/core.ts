@@ -448,6 +448,7 @@ export function summaryOf(d: MatchDetail, puuid: string, matchId: string | null 
             opponent: opp?.championId ?? null,
             kp: p.kp,
             badges: p.badges.filter((b) => b !== 'mvp' && b !== 'ace'),
+            mates: d.players.filter((x) => x.teamId === p.teamId && x !== p).map((x) => x.score),
           },
   }
 }
