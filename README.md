@@ -22,7 +22,7 @@ made here once and shows in both products.
 |---|---|
 | Primitives | `Button`, `Segmented`, `Tabs`, `Switch`, `Panel`, `Skeleton`, `Icon`, `Logo`, `StarButton`, `Link`, `TrendLine`; CSS-only: `.iv-badge`, `.iv-table`, `.iv-select`, `.iv-form`, `.iv-fig`, `.iv-label`, `.iv-error`, `.iv-empty` |
 | Game things | `ChampIcon`, `ItemIcons`, `RunePage`, `RoleIcon`, `ObjectiveIcon`, `RankCrest` (small crests bundled), `PerfDial` |
-| Matches | `MatchRow` (+ `MatchRowSkeleton`), `MatchList` (filters, summary, day groups), `MoreMatches` (infinite scroll), `MatchDetailPanel` with its tabs `Scoreboard` (each row opens `PlayerDetail`), `Breakdown`, `GoldChart`, `Timeline`, `BuildTab` (+ `PlayerPicker`) |
+| Matches | `MatchRow` (+ `MatchRowSkeleton`, `TeamBadge` for the team rating), `MatchList` (filters, summary, day groups), `MoreMatches` (infinite scroll), `MatchDetailPanel` with its tabs `Scoreboard` (each row opens `PlayerDetail`), `Breakdown`, `GoldChart`, `Timeline`, `BuildTab` (+ `PlayerPicker`) |
 | Profile | `ProfileLayout` (and its loading shapes), `PlayerHeader`, `LpGraph`, `ChampionTable`, `RolesPanel`, `PlayedWithPanel` |
 
 Where a view would share its name with a model type (`MatchDetail`, `PlayedWith`), it is a `…Panel`.

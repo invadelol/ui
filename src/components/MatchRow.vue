@@ -3,10 +3,12 @@ import { computed } from 'vue'
 import { gameFavorite, useFormat, useInvadeUi, useNames } from '../context'
 import { hideBroken } from '../dom'
 import { BADGES, queueName, queueShort, topBadges } from '../logic/labels'
+import { rowTeamRating } from '../logic/team'
 import type { Badge, MatchSummary, ScoreRow } from '../logic/types'
 import Icon from './Icon.vue'
 import PerfDial from './PerfDial.vue'
 import StarButton from './StarButton.vue'
+import TeamBadge from './TeamBadge.vue'
 import '../styles/base.css'
 import '../styles/primitives.css'
 
@@ -14,7 +16,7 @@ import '../styles/primitives.css'
  * One game in one line. The result is the row's left edge and tint, nothing else; figures stay
  * white. The whole row toggles the detail, which the parent renders right below it. Opponent,
  * kill participation and badges come from the score row when the parent does not pass them (they
- * are computed from the same full game).
+ * are computed from the same full game), and so does the team rating, first of the badges.
  *
  * The row is its own size container: from ~560px to 1600px it drops the matchup, then farm, then
  * items, instead of squeezing every column.
@@ -66,6 +68,7 @@ const outcome = computed(() => {
 const opp = computed(() => props.opponent ?? props.score?.opponent ?? null)
 const killShare = computed(() => props.kp ?? props.score?.kp ?? null)
 const shownBadges = computed(() => topBadges(props.badges.length ? props.badges : props.score?.badges))
+const team = computed(() => rowTeamRating(g.value, props.score))
 const tag = computed(() => props.score?.tag || '')
 /** Compact rows show the placement beside the small dial (the full dial carries it inside). */
 const place = computed(() => (!props.score ? '' : tag.value === 'mvp' ? t('MVP') : tag.value === 'ace' ? t('ACE') : ordinal(props.score.rank)))
@@ -109,14 +112,15 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
         </span>
 
         <template v-if="!compact">
-          <span class="iv-mr-items" :class="{ tagged: shownBadges.length }">
+          <span class="iv-mr-items">
             <span class="iv-mr-well">
               <template v-for="(id, i) in g.items.slice(0, 7)" :key="i">
                 <img v-if="id" :src="itemIcon(id)" :alt="itemName(id)" :title="itemName(id)" :class="{ trinket: i === 6 }" @error="hideBroken" />
                 <i v-else :class="{ trinket: i === 6 }" />
               </template>
             </span>
-            <span v-if="shownBadges.length" class="iv-mr-badges">
+            <span v-if="team || shownBadges.length" class="iv-mr-badges">
+              <TeamBadge v-if="team" :verdict="team" :win="g.win" />
               <span v-for="b in shownBadges" :key="b" class="iv-badge" :title="t(BADGES[b].tip)">{{ t(BADGES[b].label) }}</span>
             </span>
           </span>
@@ -388,8 +392,13 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
 }
 .iv-mr-badges {
   display: flex;
+  /* A badge shows whole or not at all: one that has no room wraps out of sight. */
+  flex-wrap: wrap;
   gap: 4px;
-  max-width: 100%;
+  /* As wide as the items above, never wider: badges do not widen the column. */
+  width: 0;
+  min-width: 100%;
+  height: 18px;
   overflow: hidden;
 }
 
@@ -531,11 +540,9 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
   .iv-mr:not(.compact) .iv-mr-well {
     flex: none;
   }
-  /* A badge shows whole or not at all: one that has no room wraps out of sight. */
   .iv-mr:not(.compact) .iv-mr-badges {
-    flex-wrap: wrap;
+    width: auto;
     min-width: 0;
-    height: 18px;
   }
   .iv-mr-well img,
   .iv-mr-well i {

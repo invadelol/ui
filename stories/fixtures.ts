@@ -87,6 +87,8 @@ export const games: MatchSummary[] = Array.from({ length: 30 }, (_, i) => {
       opponent: aram || i % 7 === 3 ? null : kit.opp[i % kit.opp.length],
       kp: Math.min(1, (g.kills + g.assists) / Math.max(1, g.kills + 6 + Math.floor(r2() * 14))),
       badges: g.deaths === 0 ? ['deathless', ...badges.filter((b) => b !== 'deathless')] : badges,
+      // Teammates' scores, spread so every team rating shows up; one game with an AFK teammate.
+      mates: [0, 1, 2, 3].map((k) => (i === 9 && k === 2 ? null : Math.round(((g.win ? 5.4 : 3.4) + Math.sin(i * 1.9 + k) * 1.4 + Math.sin(i * 0.7) * 1.1) * 10) / 10)),
     })
   })
 }

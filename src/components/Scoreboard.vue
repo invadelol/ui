@@ -4,19 +4,22 @@ import { useFormat, useInvadeUi, useNames, type LinkTarget } from '../context'
 import { hideBroken } from '../dom'
 import { riotId, side, teamsOf } from '../logic/detail'
 import { BADGES, positionName, topBadges } from '../logic/labels'
+import { detailTeamRating } from '../logic/team'
 import type { MatchDetail, PlayerView, TeamView } from '../logic/types'
 import Icon from './Icon.vue'
 import Link from './Link.vue'
 import ObjectiveIcon, { type ObjectiveIconName } from './ObjectiveIcon.vue'
 import PerfDial from './PerfDial.vue'
 import PlayerDetail from './PlayerDetail.vue'
+import TeamBadge from './TeamBadge.vue'
 import '../styles/base.css'
 import '../styles/primitives.css'
 import '../styles/detail.css'
 
 /**
  * Both teams in one table, the viewed player's team first. The team line carries the result
- * word in its colour (the only result colour), objectives with counts, bans and totals; each
+ * word in its colour (the only result colour), the viewed player's team rating on their side,
+ * objectives with counts, bans and totals; each
  * player row follows the table spec, the viewed player's row in brand. A name links to that
  * player (through the host's `linkTo` / `onOpen`). A row opens that player's game under it
  * (`PlayerDetail`), one at a time: a click anywhere on it but a link, or its chevron button.
@@ -30,6 +33,7 @@ const { champIcon, champName, itemIcon, itemName, runeIcon, runeName, spellIcon,
 
 const viewer = computed(() => props.detail.players.find((p) => p.puuid === props.puuid))
 const teams = computed(() => teamsOf(props.detail, viewer.value))
+const verdict = computed(() => detailTeamRating(props.detail, props.puuid))
 const maxDamage = computed(() => Math.max(1, ...props.detail.players.map((p) => p.damage)))
 const maxTaken = computed(() => Math.max(1, ...props.detail.players.map((p) => p.damageTaken)))
 const minutes = computed(() => Math.max(1, props.detail.duration / 60))
@@ -111,6 +115,7 @@ const target = (p: PlayerView): LinkTarget | null =>
             <div class="iv-sb-team-line">
               <b class="iv-sb-res" :class="detail.remake ? '' : team.win ? 'win' : 'loss'">{{ result(team, placement) }}</b>
               <span v-if="sideName(team.teamId)" class="iv-sb-side">{{ sideName(team.teamId) }}</span>
+              <TeamBadge v-if="verdict && team.teamId === viewer?.teamId" :verdict="verdict" :win="team.win" />
               <span class="iv-sb-obj">
                 <span v-for="o in objectives(team)" :key="o.id" :title="o.label" :class="{ none: !o.n }"><ObjectiveIcon :name="o.id" :size="14" />{{ o.n }}</span>
               </span>
