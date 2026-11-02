@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, shallowRef } from 'vue'
 import { useFormat, useInvadeUi, useNames } from '../context'
+import { provideStatGroups } from '../fit'
 import { relation } from '../logic/detail'
 import { tk } from '../logic/i18n'
 import type { MatchDetail, PlayerView } from '../logic/types'
+import type { StatIconName } from './StatIcon.vue'
+import StatLabel from './StatLabel.vue'
 import '../styles/base.css'
 import '../styles/detail.css'
 
@@ -20,6 +23,7 @@ import '../styles/detail.css'
 const props = defineProps<{ detail: MatchDetail; selected: number; me?: PlayerView }>()
 const emit = defineEmits<{ select: [index: number] }>()
 const { t } = useInvadeUi()
+provideStatGroups()
 const { compact, mmss, num, ordinal, pct, signedGold } = useFormat()
 const { champIcon, champName } = useNames()
 
@@ -121,6 +125,8 @@ const facts = computed<Fact[]>(() => {
 
 interface DuelRow {
   label: string
+  /** Riot's icon before the name; a duel's names drop to their icons together when one does not fit. */
+  icon?: StatIconName
   a: number
   b: number
   aText: string
@@ -128,7 +134,7 @@ interface DuelRow {
   /** Lower is better. */
   low?: boolean
 }
-const duelRow = (label: string, a: number, b: number, f: (n: number) => string, low = false): DuelRow => ({ label, a, b, aText: f(a), bText: f(b), low })
+const duelRow = (label: string, a: number, b: number, f: (n: number) => string, icon?: StatIconName): DuelRow => ({ label, icon, a, b, aText: f(a), bText: f(b) })
 const winner = (r: DuelRow) => (r.a === r.b ? 0 : (r.a > r.b) !== !!r.low ? 1 : -1)
 const share = (r: DuelRow) => (r.a + r.b > 0 ? (r.a / (r.a + r.b)) * 100 : 50)
 const plain = (n: number) => num(Math.round(n))
@@ -140,12 +146,12 @@ const lane = computed(() => {
   const ratio = (p: PlayerView) => (p.deaths ? (p.kills + p.assists) / p.deaths : p.kills + p.assists)
   const [aAbsorbed, bAbsorbed] = [absorbed(a), absorbed(b)]
   const rows = [
-    { ...duelRow(t('KDA'), ratio(a), ratio(b), () => ''), aText: `${a.kills}/${a.deaths}/${a.assists}`, bText: `${b.kills}/${b.deaths}/${b.assists}` },
-    duelRow(t('Damage to champions'), a.damage, b.damage, compact),
-    duelRow(t('Gold'), a.gold, b.gold, compact),
-    duelRow(t('CS'), a.cs, b.cs, plain),
-    ...(aAbsorbed !== null && bAbsorbed !== null ? [duelRow(t('Damage absorbed'), aAbsorbed, bAbsorbed, compact)] : []),
-    duelRow(t('Vision score'), a.vision, b.vision, plain),
+    { ...duelRow(t('KDA'), ratio(a), ratio(b), () => '', 'kda'), aText: `${a.kills}/${a.deaths}/${a.assists}`, bText: `${b.kills}/${b.deaths}/${b.assists}` },
+    duelRow(t('Damage to champions'), a.damage, b.damage, compact, 'damage'),
+    duelRow(t('Gold'), a.gold, b.gold, compact, 'gold'),
+    duelRow(t('CS'), a.cs, b.cs, plain, 'cs'),
+    ...(aAbsorbed !== null && bAbsorbed !== null ? [duelRow(t('Damage absorbed'), aAbsorbed, bAbsorbed, compact, 'taken')] : []),
+    duelRow(t('Vision score'), a.vision, b.vision, plain, 'vision'),
   ]
   const at15 = a.gold15 !== null || a.cs15 !== null || a.xp15 !== null ? { gold: a.gold15, cs: a.cs15, xp: a.xp15 } : null
   return { a, b, rows, at15, bSide: relation(b.teamId, props.me) }
@@ -166,12 +172,12 @@ const teams = computed(() => {
   return {
     names: props.me ? [t('Your team'), t('Enemy team')] : [t('Blue side'), t('Red side')],
     rows: [
-      duelRow(t('Kills'), mine.kills, theirs.kills, plain),
-      duelRow(t('Gold'), mine.gold, theirs.gold, compact),
-      duelRow(t('Damage to champions'), mine.damage, theirs.damage, compact),
-      duelRow(t('Damage taken'), sum(mine.teamId, (p) => p.damageTaken), sum(theirs.teamId, (p) => p.damageTaken), compact),
-      duelRow(t('CS'), sum(mine.teamId, (p) => p.cs), sum(theirs.teamId, (p) => p.cs), plain),
-      duelRow(t('Vision score'), sum(mine.teamId, (p) => p.vision), sum(theirs.teamId, (p) => p.vision), plain),
+      duelRow(t('Kills'), mine.kills, theirs.kills, plain, 'kda'),
+      duelRow(t('Gold'), mine.gold, theirs.gold, compact, 'gold'),
+      duelRow(t('Damage to champions'), mine.damage, theirs.damage, compact, 'damage'),
+      duelRow(t('Damage taken'), sum(mine.teamId, (p) => p.damageTaken), sum(theirs.teamId, (p) => p.damageTaken), compact, 'taken'),
+      duelRow(t('CS'), sum(mine.teamId, (p) => p.cs), sum(theirs.teamId, (p) => p.cs), plain, 'cs'),
+      duelRow(t('Vision score'), sum(mine.teamId, (p) => p.vision), sum(theirs.teamId, (p) => p.vision), plain, 'vision'),
       duelRow(t('Turrets'), mine.towers, theirs.towers, plain),
       duelRow(t('Dragons'), mine.dragons, theirs.dragons, plain),
       duelRow(t('Barons'), mine.barons, theirs.barons, plain),
@@ -191,6 +197,7 @@ interface Stat {
 }
 interface Section {
   label: string
+  icon?: StatIconName
   stats: Stat[]
 }
 const perMin = (v: number) => v / minutes.value
@@ -199,6 +206,7 @@ const SECTIONS = computed<Section[]>(() => {
   const out: Section[] = [
     {
       label: t('Combat'),
+      icon: 'kda',
       stats: [
         { label: t('KDA'), value: (p) => (p.deaths ? (p.kills + p.assists) / p.deaths : p.kills + p.assists + 0.01), text: (p) => `${p.kills}/${p.deaths}/${p.assists}` },
         { label: t('Kill participation'), value: (p) => p.kp, text: (_, v) => pct(v) },
@@ -209,6 +217,7 @@ const SECTIONS = computed<Section[]>(() => {
     },
     {
       label: t('Damage dealt'),
+      icon: 'damage',
       stats: [
         { label: t('To champions'), value: (p) => p.damage, text: (_, v) => compact(v) },
         { label: t('Per minute'), value: (p) => perMin(p.damage), text: (_, v) => num(Math.round(v)) },
@@ -222,6 +231,7 @@ const SECTIONS = computed<Section[]>(() => {
     },
     {
       label: t('Damage taken and healed'),
+      icon: 'taken',
       stats: [
         { label: t('Taken'), value: (p) => p.damageTaken, text: (_, v) => compact(v) },
         { label: t('Mitigated'), value: (p) => p.mitigated, text: (_, v) => compact(v) },
@@ -230,6 +240,7 @@ const SECTIONS = computed<Section[]>(() => {
     },
     {
       label: t('Economy'),
+      icon: 'gold',
       stats: [
         { label: t('Gold'), value: (p) => p.gold, text: (_, v) => compact(v) },
         { label: t('Gold per minute'), value: (p) => perMin(p.gold), text: (_, v) => num(Math.round(v)) },
@@ -251,6 +262,7 @@ const SECTIONS = computed<Section[]>(() => {
     })
   out.push({
     label: t('Vision'),
+    icon: 'vision',
     stats: [
       { label: t('Vision score'), value: (p) => p.vision },
       { label: t('Per minute'), value: (p) => perMin(p.vision), text: (_, v) => num(v, 2) },
@@ -281,6 +293,7 @@ interface Cell {
 const table = computed(() =>
   SECTIONS.value.map((s) => ({
     label: s.label,
+    icon: s.icon,
     rows: s.stats.flatMap((stat) => {
       const vals = columns.value.all.map(({ p }) => stat.value(p))
       const known = vals.filter((v): v is number => v !== null)
@@ -335,7 +348,7 @@ const who = (p: PlayerView) => `${p.gameName || champName(p.championId)} · ${ch
         <ul class="iv-brk-rows">
           <li v-for="r in lane.rows" :key="r.label" class="iv-brk-row" :style="{ '--a': `${share(r)}%` }">
             <span class="iv-brk-n" :class="{ win: winner(r) > 0 }">{{ r.aText }}</span>
-            <span class="iv-brk-row-label">{{ r.label }}</span>
+            <span class="iv-brk-row-label"><StatLabel v-if="r.icon" :stat="r.icon" :label="r.label" group="duel" /><template v-else>{{ r.label }}</template></span>
             <span class="iv-brk-n right" :class="{ win: winner(r) < 0 }">{{ r.bText }}</span>
             <span class="iv-brk-split"><i class="a self" :class="{ 'iv-brk-ahead': winner(r) > 0, 'iv-brk-even': !winner(r) }" /><i class="b" :class="[lane.bSide, { 'iv-brk-ahead': winner(r) < 0, 'iv-brk-even': !winner(r) }]" /></span>
           </li>
@@ -357,7 +370,7 @@ const who = (p: PlayerView) => `${p.gameName || champName(p.championId)} · ${ch
         <ul class="iv-brk-rows">
           <li v-for="r in teams.rows" :key="r.label" class="iv-brk-row" :style="{ '--a': `${share(r)}%` }">
             <span class="iv-brk-n" :class="{ win: winner(r) > 0 }">{{ r.aText }}</span>
-            <span class="iv-brk-row-label">{{ r.label }}</span>
+            <span class="iv-brk-row-label"><StatLabel v-if="r.icon" :stat="r.icon" :label="r.label" group="duel" /><template v-else>{{ r.label }}</template></span>
             <span class="iv-brk-n right" :class="{ win: winner(r) < 0 }">{{ r.bText }}</span>
             <span class="iv-brk-split"><i class="a ally" :class="{ 'iv-brk-ahead': winner(r) > 0, 'iv-brk-even': !winner(r) }" /><i class="b enemy" :class="{ 'iv-brk-ahead': winner(r) < 0, 'iv-brk-even': !winner(r) }" /></span>
           </li>
@@ -404,7 +417,7 @@ const who = (p: PlayerView) => `${p.gameName || champName(p.championId)} · ${ch
         </thead>
         <tbody v-for="s in table" :key="s.label">
           <tr class="iv-brk-section">
-            <th :colspan="span">{{ s.label }}</th>
+            <th :colspan="span"><StatLabel v-if="s.icon" :stat="s.icon" :label="s.label" /><template v-else>{{ s.label }}</template></th>
           </tr>
           <tr v-for="r in s.rows" :key="r.label">
             <th scope="row" :title="r.label">{{ r.label }}</th>

@@ -173,6 +173,7 @@ Label (`--text-3`, 12–13px) above the value (`.iv-fig`, 20–40px), then a uni
 | A match opened | `MatchDetailPanel` (`Scoreboard`, `PlayerDetail`, `Breakdown`, `GoldChart`, `Timeline`, `BuildTab`) |
 | Champions, roles, mates | `ChampionTable`, `RolesPanel`, `PlayedWithPanel` |
 | Items, runes, icons | `ItemIcons`, `RunePage`, `ChampIcon`, `RoleIcon`, `ObjectiveIcon` |
+| A stat's name (KDA, damage, taken, gold, CS, vision) | `StatLabel`: Riot's own glyph (`StatIcon`, from the client's post-game scoreboard) in `--text-3`, then the name. When the name does not fit, it hides and the icon stays with the name in a tooltip (hover, or a tap on touch); labels in one `group` hide together. `bare` for an icon alone next to a figure. |
 
 Before you write a new component, check this list and the package README. If two hosts need it, it belongs in this package.
 

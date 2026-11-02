@@ -4,6 +4,7 @@ import { useFormat, useInvadeUi, useNames, type LinkTarget } from '../context'
 import { hideBroken } from '../dom'
 import { riotId, side, teamsOf } from '../logic/detail'
 import { BADGES, positionName, topBadges } from '../logic/labels'
+import { provideStatGroups } from '../fit'
 import { detailTeamRating } from '../logic/team'
 import type { MatchDetail, PlayerView, TeamView } from '../logic/types'
 import Icon from './Icon.vue'
@@ -11,6 +12,7 @@ import Link from './Link.vue'
 import ObjectiveIcon, { type ObjectiveIconName } from './ObjectiveIcon.vue'
 import PerfDial from './PerfDial.vue'
 import PlayerDetail from './PlayerDetail.vue'
+import StatLabel from './StatLabel.vue'
 import TeamBadge from './TeamBadge.vue'
 import '../styles/base.css'
 import '../styles/primitives.css'
@@ -23,6 +25,8 @@ import '../styles/detail.css'
  * player row follows the table spec, the viewed player's row in brand. A name links to that
  * player (through the host's `linkTo` / `onOpen`). A row opens that player's game under it
  * (`PlayerDetail`), one at a time: a click anywhere on it but a link, or its chevron button.
+ * Stat heads carry Riot's icons; when a translated name no longer fits its column, every head
+ * drops to its icon (`StatLabel`). On a phone the figures under the name lead with their icon.
  */
 const props = defineProps<{ detail: MatchDetail; puuid: string }>()
 
@@ -30,6 +34,7 @@ const ui = useInvadeUi()
 const { t } = ui
 const { compact, kdaRatio, num, ordinal, pct, score100, signedGold } = useFormat()
 const { champIcon, champName, itemIcon, itemName, runeIcon, runeName, spellIcon, spellName, styleIcon, styleName } = useNames()
+provideStatGroups()
 
 const viewer = computed(() => props.detail.players.find((p) => p.puuid === props.puuid))
 const teams = computed(() => teamsOf(props.detail, viewer.value))
@@ -98,12 +103,12 @@ const target = (p: PlayerView): LinkTarget | null =>
       <thead>
         <tr>
           <th colspan="2">{{ t('Player') }}</th>
-          <th class="num">{{ t('KDA') }}</th>
-          <th class="num">{{ t('Damage') }}</th>
-          <th class="num iv-sb-taken">{{ t('Taken') }}</th>
-          <th class="num">{{ t('Gold') }}</th>
-          <th class="num">{{ t('CS') }}</th>
-          <th class="num iv-sb-vis">{{ t('Vision') }}</th>
+          <th class="num"><StatLabel stat="kda" :label="t('KDA')" group="head" /></th>
+          <th class="num"><StatLabel stat="damage" :label="t('Damage')" group="head" /></th>
+          <th class="num iv-sb-taken"><StatLabel stat="taken" :label="t('Taken')" group="head" /></th>
+          <th class="num"><StatLabel stat="gold" :label="t('Gold')" group="head" /></th>
+          <th class="num"><StatLabel stat="cs" :label="t('CS')" group="head" /></th>
+          <th class="num iv-sb-vis"><StatLabel stat="vision" :label="t('Vision')" group="head" /></th>
           <th>{{ t('Items') }}</th>
           <th class="num" :title="t('Invade score')">{{ t('Score') }}</th>
           <th />
@@ -123,9 +128,8 @@ const target = (p: PlayerView): LinkTarget | null =>
                 <img v-for="(b, i) in bans(team)" :key="i" :src="champIcon(b)" :alt="champName(b)" :title="t('Banned: {champion}', { champion: champName(b) })" />
               </span>
               <span class="iv-sb-tot">
-                {{ team.kills }} / {{ team.deaths }} / {{ team.assists }}
-                <span class="iv-sb-dot">·</span>
-                {{ t('{gold} gold', { gold: compact(team.gold) }) }}
+                <span><StatLabel stat="kda" :label="t('KDA')" bare />{{ team.kills }} / {{ team.deaths }} / {{ team.assists }}</span>
+                <span :title="num(team.gold)"><StatLabel stat="gold" :label="t('Gold')" bare />{{ compact(team.gold) }}</span>
               </span>
             </div>
           </td>
@@ -166,7 +170,8 @@ const target = (p: PlayerView): LinkTarget | null =>
               <b>{{ p.kills }}<i>/</i>{{ p.deaths }}<i>/</i>{{ p.assists }}</b>
               <small>{{ kdaRatio(p.kills, p.deaths, p.assists) }} · {{ pct(p.kp) }} {{ t('KP') }}</small>
             </td>
-            <td class="num iv-sb-dmg" :title="damageTitle(p)" :data-l="t('dmg')">
+            <td class="num iv-sb-dmg" :title="damageTitle(p)">
+              <StatLabel class="iv-sb-tag" stat="damage" :label="t('Damage')" :size="12" bare />
               <b><small class="iv-sb-share">{{ pct(p.damageShare) }}</small>{{ compact(p.damage) }}</b>
               <i class="iv-sb-bar"><em :style="{ width: `${(p.damage / maxDamage) * 100}%` }" /></i>
             </td>
@@ -174,11 +179,13 @@ const target = (p: PlayerView): LinkTarget | null =>
               <b>{{ compact(p.damageTaken) }}</b>
               <i class="iv-sb-bar taken"><em :style="{ width: `${(p.damageTaken / maxTaken) * 100}%` }" /></i>
             </td>
-            <td class="num iv-sb-gold" :title="`${t('{share} of the team', { share: pct(p.goldShare) })} · ${t('Gold per minute')}: ${num(p.gold / minutes)}`" :data-l="t('gold')">
+            <td class="num iv-sb-gold" :title="`${t('{share} of the team', { share: pct(p.goldShare) })} · ${t('Gold per minute')}: ${num(p.gold / minutes)}`">
+              <StatLabel class="iv-sb-tag" stat="gold" :label="t('Gold')" :size="12" bare />
               <b>{{ compact(p.gold) }}</b>
               <small>{{ num(p.gold / minutes) }}</small>
             </td>
-            <td class="num iv-sb-cs" :data-l="t('CS')">
+            <td class="num iv-sb-cs">
+              <StatLabel class="iv-sb-tag" stat="cs" :label="t('CS')" :size="12" bare />
               <b>{{ p.cs }}</b>
               <small>{{ num(p.csMin, 1) }}</small>
             </td>

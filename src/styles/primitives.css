@@ -498,3 +498,59 @@
   font-size: 12.5px;
   color: var(--text-2);
 }
+
+/* A stat's name after its Riot icon (`StatLabel`). `.bare`: the icon alone, the name kept for
+   screen readers and shown in the tooltip. */
+.iv-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  vertical-align: middle;
+  -webkit-tap-highlight-color: transparent;
+}
+.iv-stat > .iv-icon {
+  flex: none;
+  color: var(--text-3);
+}
+.iv-stat-l {
+  white-space: nowrap;
+}
+.iv-stat.bare .iv-stat-l {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* The shared tooltip (`tip.ts`): the floating layer, fixed to the viewport. */
+.iv-tip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2147483000;
+  max-width: 240px;
+  padding: 4px 8px;
+  font: 500 12px/16px var(--font);
+  color: var(--text-1);
+  background: var(--solid-2);
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-2);
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity var(--t-fast) var(--ease),
+    visibility 0s linear var(--t-fast);
+}
+.iv-tip.on {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity var(--t-fast) var(--ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .iv-tip {
+    transition: none;
+  }
+}
