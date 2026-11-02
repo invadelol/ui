@@ -59,16 +59,22 @@ function measure() {
   tight.value = text.value.scrollWidth + props.size + GAP > room + 0.5
 }
 
+/**
+ * The observer measures once on its own as soon as it observes, after the frame's layout. A font
+ * that loads later changes the name's width, not the cell's: `loadingdone` measures again. (Reading
+ * `document.fonts.ready` would lay the page out on the spot, once per label.)
+ */
 let observer: ResizeObserver | undefined
 onMounted(() => {
   if (props.bare || !root.value?.parentElement) return
   observer = new ResizeObserver(measure)
   observer.observe(root.value.parentElement)
-  document.fonts?.ready.then(measure)
+  document.fonts?.addEventListener('loadingdone', measure)
 })
 watch(() => [props.label, props.size], measure, { flush: 'post' })
 onBeforeUnmount(() => {
   observer?.disconnect()
+  document.fonts?.removeEventListener('loadingdone', measure)
   join(props.group, false)
   if (root.value) hideTip(root.value)
 })
