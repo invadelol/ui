@@ -247,11 +247,11 @@ function measure() {
   if (!el) return
   edges.value = { top: el.scrollTop > 4, bottom: el.scrollTop + el.clientHeight < el.scrollHeight - 4 }
 }
+/** The observer's first call (after the frame's layout) sets the edges: none is read on mount. */
 let ro: ResizeObserver | undefined
 onMounted(() => {
   ro = new ResizeObserver(measure)
   if (feed.value) ro.observe(feed.value)
-  measure()
 })
 onBeforeUnmount(() => ro?.disconnect())
 watch([chapters, scope], () => requestAnimationFrame(() => {

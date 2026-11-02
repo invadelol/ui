@@ -4,6 +4,7 @@ import { gameFavorite, useFormat, useInvadeUi, useNames } from '../context'
 import { tk } from '../logic/i18n'
 import { hasEvents } from '../logic/detail'
 import type { MatchDetail } from '../logic/types'
+import { afterPaint } from '../dom'
 import Icon from './Icon.vue'
 import StarButton from './StarButton.vue'
 import Scoreboard from './Scoreboard.vue'
@@ -66,6 +67,12 @@ const TABS = [
 ] as const
 type TabId = (typeof TABS)[number]['id']
 const tab = shallowRef<TabId>('scoreboard')
+/**
+ * The tab drawn below the line. It follows `tab` once the pressed tab has painted: the tap answers
+ * at once and a heavier tab (a chart, the feed) draws in the next frame.
+ */
+const body = shallowRef<TabId>('scoreboard')
+watch(tab, (id) => afterPaint(() => tab.value === id && (body.value = id)))
 /** Gold needs the per-minute frames; Timeline also needs events (old stored games have none). */
 const tabs = computed(() => TABS.filter((x) => !x.timeline || (props.detail?.timeline && (x.id !== 'timeline' || hasEvents(props.detail)))))
 watch(tabs, (list) => {
@@ -116,11 +123,11 @@ const favorite = computed(() =>
         <span v-if="$slots.actions" class="iv-md-actions"><slot name="actions" /></span>
       </div>
       <div class="iv-md-body">
-        <Scoreboard v-if="tab === 'scoreboard'" :detail="detail" :puuid="puuid" />
-        <Breakdown v-else-if="tab === 'breakdown'" :detail="detail" :selected="selected" :me="me" @select="selected = $event" />
-        <GoldChart v-else-if="tab === 'gold' && detail.timeline" :detail="detail" :timeline="detail.timeline" :selected="selected" :me="me" />
-        <Timeline v-else-if="tab === 'timeline' && detail.timeline" :detail="detail" :timeline="detail.timeline" :selected="selected" :me="me" @select="selected = $event" />
-        <BuildTab v-else-if="tab === 'build'" :detail="detail" :selected="selected" :me="me" @select="selected = $event" />
+        <Scoreboard v-if="body === 'scoreboard'" :detail="detail" :puuid="puuid" />
+        <Breakdown v-else-if="body === 'breakdown'" :detail="detail" :selected="selected" :me="me" @select="selected = $event" />
+        <GoldChart v-else-if="body === 'gold' && detail.timeline" :detail="detail" :timeline="detail.timeline" :selected="selected" :me="me" />
+        <Timeline v-else-if="body === 'timeline' && detail.timeline" :detail="detail" :timeline="detail.timeline" :selected="selected" :me="me" @select="selected = $event" />
+        <BuildTab v-else-if="body === 'build'" :detail="detail" :selected="selected" :me="me" @select="selected = $event" />
       </div>
     </template>
   </div>
