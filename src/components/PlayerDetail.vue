@@ -2,11 +2,14 @@
 import { computed } from 'vue'
 import { useFormat, useInvadeUi, useNames } from '../context'
 import { hideBroken } from '../dom'
+import { provideStatGroups } from '../fit'
 import { laneLead, PINGS, relation, SCORE_PARTS, skillMatrix, skillPriority } from '../logic/detail'
 import { positionName } from '../logic/labels'
 import type { MatchDetail, Ping, PlayerView } from '../logic/types'
 import PerfDial from './PerfDial.vue'
 import RoleIcon from './RoleIcon.vue'
+import type { StatIconName } from './StatIcon.vue'
+import StatLabel from './StatLabel.vue'
 import '../styles/base.css'
 import '../styles/primitives.css'
 import '../styles/detail.css'
@@ -21,6 +24,7 @@ const props = defineProps<{ detail: MatchDetail; player: PlayerView; me?: Player
 const { t } = useInvadeUi()
 const { compact, num, ordinal, score100, signedGold } = useFormat()
 const { champIcon, champName, itemIcon, itemName, runeIcon, runeName, spellIcon, spellName, styleIcon, styleName } = useNames()
+provideStatGroups()
 
 const p = computed(() => props.player)
 const opp = computed(() => props.detail.players.find((x) => x.participantId === p.value.opponent))
@@ -46,11 +50,12 @@ interface Stat {
   /** A shade of the damage split. */
   dot?: 1 | 2 | 3
 }
-const groups = computed<{ title: string; rows: Stat[] }[]>(() => {
+const groups = computed<{ title: string; icon: StatIconName; rows: Stat[] }[]>(() => {
   const x = p.value
   return [
     {
       title: t('Combat'),
+      icon: 'damage',
       rows: [
         { label: t('Damage to champions'), value: compact(x.damage), bar: bar((y) => y.damage) },
         { label: t('Damage taken'), value: compact(x.damageTaken), bar: bar((y) => y.damageTaken) },
@@ -61,6 +66,7 @@ const groups = computed<{ title: string; rows: Stat[] }[]>(() => {
     },
     {
       title: t('Vision & objectives'),
+      icon: 'vision',
       rows: [
         { label: t('Vision score'), value: num(x.vision), bar: bar((y) => y.vision) },
         { label: t('Wards placed'), value: num(x.wardsPlaced), bar: bar((y) => y.wardsPlaced) },
@@ -72,6 +78,7 @@ const groups = computed<{ title: string; rows: Stat[] }[]>(() => {
     },
     {
       title: t('Economy'),
+      icon: 'gold',
       rows: [
         { label: t('Gold'), value: compact(x.gold), bar: bar((y) => y.gold) },
         { label: t('Gold per minute'), value: num(x.gold / minutes.value) },
@@ -89,8 +96,9 @@ const duel = computed(() => {
   const a = p.value
   const b = opp.value
   if (!b) return []
-  const row = (label: string, mine: number, theirs: number, f: (n: number) => string) => ({
+  const row = (label: string, mine: number, theirs: number, f: (n: number) => string, icon?: StatIconName) => ({
     label,
+    icon,
     mine: f(mine),
     theirs: f(theirs),
     lead: Math.sign(mine - theirs),
@@ -98,11 +106,11 @@ const duel = computed(() => {
   })
   const plain = (n: number) => num(n)
   return [
-    row(t('Damage'), a.damage, b.damage, compact),
-    row(t('Taken'), a.damageTaken, b.damageTaken, compact),
-    row(t('Gold'), a.gold, b.gold, compact),
-    row(t('CS'), a.cs, b.cs, plain),
-    row(t('Vision'), a.vision, b.vision, plain),
+    row(t('Damage'), a.damage, b.damage, compact, 'damage'),
+    row(t('Taken'), a.damageTaken, b.damageTaken, compact, 'taken'),
+    row(t('Gold'), a.gold, b.gold, compact, 'gold'),
+    row(t('CS'), a.cs, b.cs, plain, 'cs'),
+    row(t('Vision'), a.vision, b.vision, plain, 'vision'),
     row(t('Objectives'), a.objectiveDamage, b.objectiveDamage, compact),
   ]
 })
@@ -207,7 +215,7 @@ const who = (x: PlayerView) => x.gameName || champName(x.championId)
         </ul>
 
         <div v-for="g in groups" :key="g.title" class="iv-pd-block">
-          <h4 class="iv-label">{{ g.title }}</h4>
+          <h4 class="iv-label"><StatLabel :stat="g.icon" :label="g.title" :size="13" /></h4>
           <ul class="iv-pd-stats">
             <li v-for="r in g.rows" :key="r.label">
               <span><i v-if="r.dot" class="iv-pd-dot" :class="`d${r.dot}`" />{{ r.label }}</span>
@@ -242,7 +250,7 @@ const who = (x: PlayerView) => x.gameName || champName(x.championId)
           <ul class="iv-brk-rows">
             <li v-for="r in duel" :key="r.label" class="iv-brk-row" :style="{ '--a': `${r.share}%` }">
               <span class="iv-brk-n" :class="{ win: r.lead > 0 }">{{ r.mine }}</span>
-              <span class="iv-brk-row-label">{{ r.label }}</span>
+              <span class="iv-brk-row-label"><StatLabel v-if="r.icon" :stat="r.icon" :label="r.label" group="duel" /><template v-else>{{ r.label }}</template></span>
               <span class="iv-brk-n right" :class="{ win: r.lead < 0 }">{{ r.theirs }}</span>
               <span class="iv-brk-split"
                 ><i class="a" :class="[mineSide, { 'iv-brk-ahead': r.lead > 0, 'iv-brk-even': !r.lead }]" /><i class="b" :class="[oppSide, { 'iv-brk-ahead': r.lead < 0, 'iv-brk-even': !r.lead }]"

@@ -10,6 +10,8 @@ export * from './logic'
 export { createInvadeUi, gameFavorite, provideInvadeUi, useFormat, useInvadeUi, useNames } from './context'
 export type { AssetKind, GameFavorite, InvadeUi, InvadeUiOptions, LinkTarget, NameKind } from './context'
 export { QUIET_DELAY, sameKey, useDelayedFlag, useStableData } from './stable'
+export { provideStatGroups } from './fit'
+export { hideTip, showTip } from './tip'
 export type { StableData, StableOptions } from './stable'
 
 // Primitives
@@ -33,6 +35,8 @@ export { default as PerfDial } from './components/PerfDial.vue'
 export { default as RankCrest } from './components/RankCrest.vue'
 export { default as RoleIcon } from './components/RoleIcon.vue'
 export { default as RunePage } from './components/RunePage.vue'
+export { default as StatIcon, type StatIconName } from './components/StatIcon.vue'
+export { default as StatLabel } from './components/StatLabel.vue'
 
 // Matches
 export { default as MatchRow } from './components/MatchRow.vue'

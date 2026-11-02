@@ -146,6 +146,44 @@
 .iv-sb col.iv-sb-c-more {
   width: 30px;
 }
+/* Room for the stat heads' names when the table has it; below, they drop to their icons. */
+@container sb (min-width: 1000px) {
+  .iv-sb col.iv-sb-c-dmg {
+    width: 84px;
+  }
+  .iv-sb col.iv-sb-c-taken {
+    width: 76px;
+  }
+  .iv-sb col.iv-sb-c-gold {
+    width: 64px;
+  }
+  .iv-sb col.iv-sb-c-cs {
+    width: 52px;
+  }
+  .iv-sb col.iv-sb-c-vis {
+    width: 66px;
+  }
+}
+@container sb (min-width: 1200px) {
+  .iv-sb col.iv-sb-c-kda {
+    width: 96px;
+  }
+  .iv-sb col.iv-sb-c-dmg {
+    width: 96px;
+  }
+  .iv-sb col.iv-sb-c-taken {
+    width: 92px;
+  }
+  .iv-sb col.iv-sb-c-gold {
+    width: 74px;
+  }
+  .iv-sb col.iv-sb-c-cs {
+    width: 56px;
+  }
+  .iv-sb col.iv-sb-c-vis {
+    width: 76px;
+  }
+}
 .iv-sb th,
 .iv-sb td {
   padding: 0 6px;
@@ -244,13 +282,21 @@
   opacity: 0.45;
 }
 .iv-sb-tot {
+  display: flex;
+  gap: 12px;
   margin-left: auto;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
   color: var(--text-2);
 }
-.iv-sb-dot {
-  margin: 0 4px;
-  color: var(--text-4);
+.iv-sb-tot > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+/* A figure's icon, on a phone only (the column heads name them above). */
+.iv-sb .iv-sb-tag {
+  display: none;
 }
 
 .iv-sb-who {
@@ -687,12 +733,15 @@ button.iv-sb-link:hover:not(:disabled) {
   .iv-sb-items .trinket {
     margin-left: 3px;
   }
-  /* Damage, gold and CS: the figure and a quiet unit, on one baseline. */
+  /* Damage, gold and CS: the figure after its icon (tap it for its name). */
   .iv-sb tr.iv-sb-row > :is(td.iv-sb-dmg, td.iv-sb-gold, td.iv-sb-cs):not(.iv-sb-taken) {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 3px;
     text-align: left;
+  }
+  .iv-sb tr.iv-sb-row .iv-sb-tag {
+    display: inline-flex;
   }
   .iv-sb tr.iv-sb-row > :is(td.iv-sb-dmg, td.iv-sb-gold, td.iv-sb-cs) > b {
     font-size: 12px;
@@ -700,12 +749,6 @@ button.iv-sb-link:hover:not(:disabled) {
   .iv-sb tr.iv-sb-row > :is(td.iv-sb-taken, td.iv-sb-vis).iv-sb-taken,
   .iv-sb tr.iv-sb-row > td.iv-sb-vis {
     display: none;
-  }
-  .iv-sb tr.iv-sb-row > :is(td.iv-sb-dmg, td.iv-sb-gold, td.iv-sb-cs)::after {
-    content: attr(data-l);
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--text-3);
   }
   .iv-sb tr.iv-sb-row > :is(td.iv-sb-gold, td.iv-sb-cs) > small,
   .iv-sb td.iv-sb-dmg .iv-sb-share,
