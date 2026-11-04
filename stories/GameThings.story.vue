@@ -54,6 +54,15 @@ const OBJECTIVES: ObjectiveIconName[] = ['tower', 'inhib', 'dragon', 'grubs', 'h
       </div>
     </Variant>
 
+    <Variant title="Rune page, compact">
+      <div class="story">
+        <div class="story-row" style="align-items: flex-start; gap: 40px">
+          <RunePage compact :page="{ p: [8300, 8369, 8304, 8345, 8347], s: [8200, 8226, 8210], m: [5008, 5008, 5001] }" />
+          <RunePage compact :page="{ p: [8000, 8010, 9111, 9104, 8299], s: [8400, 8444, 8242], m: [5005, 5008, 5011] }" />
+        </div>
+      </div>
+    </Variant>
+
     <Variant title="Trend line">
       <div class="story" style="max-width: 320px">
         <TrendLine :values="[2150, 2172, 2153, 2174, 2194, 2176, 2156, 2179, 2198, 2177]" :height="44" area />
