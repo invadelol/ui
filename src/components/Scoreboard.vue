@@ -122,7 +122,7 @@ const target = (p: PlayerView): LinkTarget | null =>
               <span v-if="sideName(team.teamId)" class="iv-sb-side">{{ sideName(team.teamId) }}</span>
               <TeamBadge v-if="verdict && team.teamId === viewer?.teamId" :verdict="verdict" :win="team.win" />
               <span class="iv-sb-obj">
-                <span v-for="o in objectives(team)" :key="o.id" :title="o.label" :class="{ none: !o.n }"><ObjectiveIcon :name="o.id" :size="14" />{{ o.n }}</span>
+                <span v-for="o in objectives(team)" :key="o.id" :title="o.label" :class="{ none: !o.n }"><ObjectiveIcon :name="o.id" :size="16" />{{ o.n }}</span>
               </span>
               <span v-if="bans(team).length" class="iv-sb-bans" :title="t('Bans')">
                 <img v-for="(b, i) in bans(team)" :key="i" :src="champIcon(b)" :alt="champName(b)" :title="t('Banned: {champion}', { champion: champName(b) })" />
