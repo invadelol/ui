@@ -76,6 +76,14 @@
 .iv-btn.danger:hover:not(:disabled) {
   background: rgb(var(--loss-rgb) / 0.1);
 }
+/* Focus: the ring has to outrank each variant's own shadow, so it is stated here, after them.
+   Primary keeps its relief under the ring; the others show the ring alone. */
+.iv-btn:focus-visible {
+  box-shadow: var(--focus);
+}
+.iv-btn.primary:focus-visible {
+  box-shadow: var(--primary-shadow), var(--focus);
+}
 
 /* Touch: a control is a fingertip tall. The desktop app (a mouse) keeps the sizes above. */
 @media (pointer: coarse) {
@@ -130,6 +138,12 @@
   color: var(--text-1);
   background: var(--key);
   box-shadow: var(--key-shadow);
+}
+.iv-seg > button:focus-visible {
+  box-shadow: var(--focus);
+}
+.iv-seg > button.on:focus-visible:not(:disabled) {
+  box-shadow: var(--key-shadow), var(--focus);
 }
 .iv-seg > button small {
   font-size: 11px;
