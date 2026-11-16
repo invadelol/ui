@@ -66,7 +66,7 @@ async function loadMore(): Promise<void | { retryAfterMs: number }> {
     <Variant title="Another player">
       <div class="story">
         <ProfileLayout>
-          <template #header><PlayerHeader :profile="otherProfile" :games="games.slice(4)" /></template>
+          <template #header><PlayerHeader :profile="otherProfile" :games="games.slice(4)" :badges="['Beta tester']" /></template>
           <template #side>
             <ChampionTable v-model:champion="champion" :profile="otherProfile" :games="[]" :scores="new Map()" />
             <RolesPanel v-model:role="role" :lanes="otherProfile.lanes" />

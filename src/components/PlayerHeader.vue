@@ -14,7 +14,12 @@ import '../styles/profile.css'
  * both ranks with Riot's crest. The splash of their most played champion sits behind the right
  * half of the band only, faded with straight masks.
  */
-const props = defineProps<{ profile: ProfileView; games: MatchSummary[] }>()
+const props = defineProps<{
+  profile: ProfileView
+  games: MatchSummary[]
+  /** Extra neutral badges after the Riot ID, from the host (a role the player holds there). */
+  badges?: string[]
+}>()
 const ui = useInvadeUi()
 const { t } = ui
 const { ago, pct } = useFormat()
@@ -47,6 +52,7 @@ const lastSeason = (r: Rank | null) => (r?.previous ? t('Last season: {tier}', {
         <span class="iv-pf-name">{{ card.gameName }}</span><small>#{{ card.tagLine }}</small>
         <span v-if="profile.isSelf" class="iv-badge brand">{{ t('You') }}</span>
         <span v-else-if="profile.isOwn" class="iv-badge brand">{{ t('Your account') }}</span>
+        <span v-for="b in badges" :key="b" class="iv-badge">{{ b }}</span>
       </h2>
       <p class="iv-pf-meta">
         <span>{{ t('Level {n}', { n: card.level }) }}</span>

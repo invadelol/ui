@@ -127,6 +127,9 @@
   align-self: center;
   margin-left: 8px;
 }
+.iv-pf-who h2 .iv-badge + .iv-badge {
+  margin-left: 4px;
+}
 .iv-pf-meta {
   display: flex;
   flex-wrap: wrap;
