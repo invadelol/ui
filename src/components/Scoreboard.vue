@@ -3,7 +3,8 @@ import { computed, shallowRef, useId, watch } from 'vue'
 import { useFormat, useInvadeUi, useNames, type LinkTarget } from '../context'
 import { hideBroken } from '../dom'
 import { riotId, side, teamsOf } from '../logic/detail'
-import { BADGES, positionName, topBadges } from '../logic/labels'
+import { BADGES, positionName } from '../logic/labels'
+import MatchTags from './MatchTags.vue'
 import { provideStatGroups } from '../fit'
 import { detailTeamRating } from '../logic/team'
 import type { MatchDetail, PlayerView, TeamView } from '../logic/types'
@@ -163,7 +164,7 @@ const target = (p: PlayerView): LinkTarget | null =>
                     · <span :class="leadClass(p.gold15)" :title="t('Gold lead over the lane opponent at 15 minutes')">{{ t('{gold} gold @15', { gold: signedGold(p.gold15) }) }}</span>
                   </template>
                 </small>
-                <span v-for="b in topBadges(p.badges)" :key="b" class="iv-badge" :title="t(BADGES[b].tip)">{{ t(BADGES[b].label) }}</span>
+                <MatchTags :badges="p.badges" :max="3" />
               </span>
             </td>
             <td class="num iv-sb-kda">
@@ -203,7 +204,7 @@ const target = (p: PlayerView): LinkTarget | null =>
             </td>
             <td class="num iv-sb-score">
               <span v-if="p.score !== null" class="iv-sb-perf">
-                <span v-if="p.badges.includes('mvp')" class="iv-badge gold" :title="t(BADGES.mvp.tip)">{{ t('MVP') }}</span>
+                <span v-if="p.badges.includes('mvp')" class="iv-badge brand" :title="t(BADGES.mvp.tip)">{{ t('MVP') }}</span>
                 <span v-else-if="p.badges.includes('ace')" class="iv-badge" :title="t(BADGES.ace.tip)">{{ t('ACE') }}</span>
                 <small v-else>{{ ordinal(p.rank) }}</small>
                 <PerfDial :score="score100(p.score)" :rank="p.rank" size="sm" />

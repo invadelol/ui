@@ -2,12 +2,13 @@
 import { computed } from 'vue'
 import { gameFavorite, useFormat, useInvadeUi, useNames } from '../context'
 import { hideBroken } from '../dom'
-import { BADGES, queueName, queueShort, topBadges } from '../logic/labels'
+import { queueName, queueShort } from '../logic/labels'
 import { rowTeamRating } from '../logic/team'
 import type { Badge, MatchSummary, ScoreRow } from '../logic/types'
 import Icon from './Icon.vue'
 import PerfDial from './PerfDial.vue'
 import StarButton from './StarButton.vue'
+import MatchTags from './MatchTags.vue'
 import TeamBadge from './TeamBadge.vue'
 import '../styles/base.css'
 import '../styles/primitives.css'
@@ -67,7 +68,7 @@ const outcome = computed(() => {
 })
 const opp = computed(() => props.opponent ?? props.score?.opponent ?? null)
 const killShare = computed(() => props.kp ?? props.score?.kp ?? null)
-const shownBadges = computed(() => topBadges(props.badges.length ? props.badges : props.score?.badges))
+const shownBadges = computed(() => (props.badges.length ? props.badges : props.score?.badges) ?? [])
 const team = computed(() => rowTeamRating(g.value, props.score))
 const tag = computed(() => props.score?.tag || '')
 /** Compact rows show the placement beside the small dial (the full dial carries it inside). */
@@ -121,7 +122,7 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
             </span>
             <span v-if="team || shownBadges.length" class="iv-mr-badges">
               <TeamBadge v-if="team" :verdict="team" :win="g.win" />
-              <span v-for="b in shownBadges" :key="b" class="iv-badge" :title="t(BADGES[b].tip)">{{ t(BADGES[b].label) }}</span>
+              <MatchTags :badges="shownBadges" />
             </span>
           </span>
 

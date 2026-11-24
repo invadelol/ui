@@ -11,7 +11,7 @@ import '../styles/base.css'
  * (worst) through a muted Invade violet (an average game, ~40 on the score's real scale) to blue,
  * so most games read calm and only the extremes stand out. 80 and up is gold with a soft glow, 90
  * and up a brighter gold that glows a little more (a few games in a thousand). The figure stays
- * white (the text colour), gold from 80; MVP is gold. The arc draws in with the view's first paint
+ * white (the text colour), gold from 80; MVP is violet. The arc draws in with the view's first paint
  * only: a dial that appears later in the same view (a filter, an appended page, a late score) is
  * simply there, so switching a filter never replays it.
  * `sm` (scoreboards, compact rows): a smaller dial, no placement. `score: null`: not scored yet.
@@ -160,7 +160,7 @@ const len = computed(() => (Math.max(3, Math.min(100, props.score ?? 0)) / 100) 
   transform: translateX(-50%);
 }
 .iv-dial .iv-dial-place.mvp {
-  color: var(--gold-c);
+  color: var(--brand-hi);
 }
 
 /* Small: scoreboards and compact rows. */
