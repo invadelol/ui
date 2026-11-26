@@ -14,8 +14,8 @@ import '../styles/primitives.css'
 import '../styles/profile.css'
 
 /**
- * The feed: one filter bar, one summary line of what it shows (record, KDA, form), then the
- * games grouped by day (or by champion). A row opens the host's `detail` slot right below it
+ * The feed: a title with one summary line of what it shows (record, KDA, form), one filter bar,
+ * then the games grouped by day (or by champion). A row opens the host's `detail` slot right below it
  * (`{ game }`: the host loads the game and renders `MatchDetail`). With `loadMore`, older games
  * load as the end comes into view (`MoreMatches`): stored pages freely, and the list ends quietly when
  * the source holds older games back.
@@ -167,6 +167,19 @@ const formTitle = (g: MatchSummary) => `${champName(g.championId)} · ${g.remake
 
 <template>
   <section ref="root" class="iv-pf-feed">
+    <header class="iv-pf-feed-head">
+      <h3>{{ t('Match history') }}</h3>
+      <span v-if="status === 'ready' && summary.games" class="iv-pf-sum-figs">
+        <span>{{ count(summary.games, 'games', t) }}</span>
+        <span><b class="w">{{ summary.wins }}{{ t('W') }}</b> <b class="l">{{ summary.losses }}{{ t('L') }}</b> {{ pct(summary.wins / summary.games) }}</span>
+        <span><b>{{ summary.kda }}</b> {{ t('KDA') }}</span>
+        <span><b>{{ num(summary.csMin, 1) }}</b> {{ t('CS/min') }}</span>
+        <span v-if="summary.score !== null" :title="t('Average Invade score')"><b>{{ summary.score }}</b> {{ t('avg score') }}</span>
+      </span>
+      <span v-if="status === 'ready' && summary.games" class="iv-form iv-pf-form" :title="t('Oldest to newest')">
+        <i v-for="g in summary.form" :key="g.gameId" :class="g.remake ? 'r' : g.win ? 'w' : 'l'" :title="formTitle(g)" />
+      </span>
+    </header>
     <div v-if="games.length" class="iv-pf-bar">
       <div class="iv-seg">
         <button v-for="f in queues" :key="f.id" type="button" :class="{ on: queue === f.id }" @click="queue = f.id">
@@ -187,6 +200,7 @@ const formTitle = (g: MatchSummary) => `${champName(g.championId)} · ${g.remake
           <RoleIcon :lane="r" />
         </button>
       </div>
+      <button v-if="filtered" type="button" class="iv-btn ghost sm iv-pf-clear" @click="clear"><Icon name="x" :size="13" />{{ t('Clear filters') }}</button>
       <select v-model.number="champion" class="iv-select iv-pf-select" :aria-label="t('Filter games by champion')">
         <option :value="0">{{ t('All champions') }}</option>
         <option v-for="c in championOptions" :key="c.id" :value="c.id">{{ champName(c.id) }} ({{ c.n }})</option>
@@ -195,20 +209,6 @@ const formTitle = (g: MatchSummary) => `${champName(g.championId)} · ${g.remake
         <option value="recent">{{ t('By date') }}</option>
         <option value="champion">{{ t('By champion') }}</option>
       </select>
-    </div>
-
-    <div v-if="status === 'ready' && summary.games" class="iv-pf-sum">
-      <span class="iv-pf-sum-figs">
-        <span><b>{{ count(summary.games, 'games', t) }}</b></span>
-        <span><b>{{ t('{w}W {l}L', { w: summary.wins, l: summary.losses }) }}</b> {{ pct(summary.wins / summary.games) }}</span>
-        <span><b>{{ summary.kda }}</b> {{ t('KDA') }}</span>
-        <span><b>{{ num(summary.csMin, 1) }}</b> {{ t('CS/min') }}</span>
-        <span v-if="summary.score !== null" :title="t('Average Invade score')"><b>{{ summary.score }}</b> {{ t('avg score') }}</span>
-      </span>
-      <span class="iv-form iv-pf-form" :title="t('Oldest to newest')">
-        <i v-for="g in summary.form" :key="g.gameId" :class="g.remake ? 'r' : g.win ? 'w' : 'l'" :title="formTitle(g)" />
-      </span>
-      <button v-if="filtered" type="button" class="iv-btn ghost sm iv-pf-clear" @click="clear"><Icon name="x" :size="13" />{{ t('Clear filters') }}</button>
     </div>
 
     <!-- States: inside the area that holds the games. -->

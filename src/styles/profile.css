@@ -41,7 +41,7 @@
   .iv-pf-side > :first-child:nth-last-child(odd) {
     grid-column: 1 / -1;
   }
-  .iv-pf-champs:not(.all) tbody tr:nth-child(n + 4) {
+  .iv-pf-champs:not(.all) .iv-pf-rows > li:nth-child(n + 4) {
     display: none;
   }
   .iv-pf-champs .iv-btn.iv-pf-more-rows.few {
@@ -57,188 +57,553 @@
   }
 }
 
-/* --- header band ----------------------------------------------------------------------------------- */
+/* --- the plate (PlayerHeader) ------------------------------------------------------------------------
+   The page's heaviest block, a lit sheet (the brand light from its top-right corner): the player,
+   then the rank as an object, then the main champion's splash filling the right end beyond the
+   text. `--iv-pf-tier` (an "r g b" triple, set inline) is the shown tier's colour: its light stands
+   behind the emblem, soft and still, never a halo on the emblem or the text. */
 .iv-pf-head {
+  --iv-pf-art: 0.55;
+  --iv-pf-glow: 0.3;
+  --iv-pf-lit: 0.16;
   position: relative;
   isolation: isolate;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 14px 16px;
-  min-height: 96px;
-  padding: 16px 20px;
+  gap: 20px 32px;
+  min-height: 132px;
+  padding: 22px 28px 24px 24px;
   overflow: hidden;
-  background: var(--surface-1);
-  border-radius: var(--r-md);
-  box-shadow: var(--hi);
+  background: var(--sheen), var(--surface-1);
+  border-radius: var(--r-lg);
+  box-shadow: var(--lit);
 }
-/* The main champion's splash: right half of the band only, faded with straight masks. */
+:where([data-theme='light'], .iv-light) .iv-pf-head {
+  --iv-pf-art: 0.4;
+  --iv-pf-glow: 0.22;
+  --iv-pf-lit: 0.07;
+}
+.iv-pf-head::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: radial-gradient(60% 140% at 100% 0%, rgb(var(--brand-rgb) / var(--iv-pf-lit)), rgb(var(--brand-rgb) / 0) 72%);
+  pointer-events: none;
+}
+/* The main champion's splash: the band's right end, faded into the sheet from its left edge and foot. */
 .iv-pf-splash {
   position: absolute;
   z-index: -1;
   top: 0;
   right: 0;
-  width: min(64%, 760px);
+  width: min(44%, 600px);
   height: 100%;
   object-fit: cover;
-  object-position: 50% 20%;
-  opacity: 0.22;
-  filter: saturate(0.8);
+  object-position: 50% 22%;
+  opacity: var(--iv-pf-art);
   pointer-events: none;
-  mask-image: linear-gradient(90deg, transparent 0%, #000 62%), linear-gradient(0deg, transparent 0%, #000 55%);
+  -webkit-mask-image: linear-gradient(90deg, transparent, rgb(0 0 0 / 0.55) 38%, #000 72%), linear-gradient(0deg, transparent, #000 50%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, rgb(0 0 0 / 0.55) 38%, #000 72%), linear-gradient(0deg, transparent, #000 50%);
   mask-composite: intersect;
 }
+
+/* Who: the icon with its level as a key hanging under it, the Riot ID, chips, the last game. */
+.iv-pf-id {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 0 1 auto;
+  min-width: 0;
+}
 .iv-pf-icon {
+  position: relative;
   flex: none;
-  width: 64px;
-  height: 64px;
-  border-radius: var(--r-md);
+  width: 80px;
+  height: 80px;
+  margin-bottom: 6px;
+}
+.iv-pf-icon img {
+  display: block;
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  background: var(--surface-3);
+  border-radius: var(--r-lg);
+  box-shadow: var(--portrait);
+}
+.iv-pf-icon b {
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  height: 20px;
+  padding: 0 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 20px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--text-2);
+  background: var(--key);
+  border-radius: var(--r-sm);
+  box-shadow: var(--key-shadow);
+  transform: translateX(-50%);
 }
 .iv-pf-who {
   display: grid;
-  gap: 6px;
-  flex: 1 1 220px;
+  gap: 9px;
   min-width: 0;
 }
 .iv-pf-who h2 {
   display: flex;
   align-items: baseline;
-  gap: 2px;
+  gap: 5px;
   min-width: 0;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 24px;
-  letter-spacing: -0.01em;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 .iv-pf-name {
+  min-width: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 .iv-pf-who h2 small {
   flex: none;
-  font-size: 15px;
-  font-weight: 400;
+  font-size: 17px;
+  font-weight: 500;
   letter-spacing: 0;
   color: var(--text-3);
 }
-.iv-pf-who h2 .iv-badge {
+.iv-pf-copy {
+  display: inline-grid;
   flex: none;
+  place-items: center;
   align-self: center;
-  margin-left: 8px;
+  width: 28px;
+  height: 28px;
+  margin-left: 2px;
+  padding: 0;
+  color: var(--text-4);
+  background: none;
+  border: 0;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition:
+    color var(--t-fast),
+    background-color var(--t-fast);
 }
-.iv-pf-who h2 .iv-badge + .iv-badge {
-  margin-left: 4px;
+.iv-pf-copy:hover {
+  color: var(--text-1);
+  background: var(--surface-2);
 }
-.iv-pf-meta {
+.iv-pf-copy:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+.iv-pf-chips {
   display: flex;
   flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+.iv-pf-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 4px 0;
+  gap: 6px;
+  height: 24px;
+  padding: 0 9px;
   font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.iv-pf-chip :is(.iv-role-icon, .iv-icon) {
+  width: 14px;
+  height: 14px;
+  color: var(--text-3);
+}
+.iv-pf-chip.brand {
+  color: var(--brand-hi);
+  background: rgb(var(--brand-rgb) / 0.16);
+  box-shadow: inset 0 0 0 1px rgb(var(--brand-rgb) / 0.32);
+}
+.iv-pf-meta {
+  margin: 0;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--text-3);
 }
-.iv-pf-meta > span + span::before {
-  content: '·';
-  margin: 0 7px;
-  color: var(--text-4);
-}
-.iv-pf-flag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--text-2);
-}
-.iv-pf-flag .iv-icon {
-  color: var(--text-3);
-}
 
-.iv-pf-ranks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px 32px;
-  margin-left: auto;
-}
+/* Where they stand: after a hairline, the emblem in its tier's light, the rank and LP as figures,
+   the record and ladder place, the other queue as one line. */
 .iv-pf-rank {
   display: flex;
   align-items: center;
   gap: 12px;
   min-width: 0;
+  padding-left: 32px;
+  border-left: 1px solid var(--line);
 }
-.iv-pf-rank > div {
+.iv-pf-emb {
+  position: relative;
+  isolation: isolate;
   display: grid;
-  gap: 4px;
+  flex: none;
+  place-items: center;
+  margin: -14px -12px -14px -16px;
 }
-.iv-pf-rank p {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  white-space: nowrap;
+.iv-pf-emb::before {
+  content: '';
+  position: absolute;
+  inset: -22px -14px;
+  z-index: -1;
+  background: radial-gradient(closest-side, rgb(var(--iv-pf-tier, var(--brand-rgb)) / var(--iv-pf-glow)), rgb(var(--iv-pf-tier, var(--brand-rgb)) / 0));
+  pointer-events: none;
 }
-.iv-pf-rank b {
-  font-size: 14px;
-  font-weight: 600;
+.iv-pf-emb .iv-crest.big img:not(.mini) {
+  filter: drop-shadow(0 6px 12px rgb(0 0 0 / 0.45));
 }
-.iv-pf-lp {
-  font-size: 14px;
-  font-weight: 600;
+.iv-pf-rank.none .iv-pf-emb {
+  opacity: 0.5;
 }
-.iv-pf-rank small {
+.iv-pf-rank.none .iv-pf-emb::before {
+  display: none;
+}
+.iv-pf-rank-t {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.iv-pf-rank-t > small {
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
   color: var(--text-3);
 }
-.iv-pf-rank.none .iv-crest {
-  opacity: 0.5;
+.iv-pf-rank-t p {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+  white-space: nowrap;
+}
+.iv-pf-tier,
+.iv-pf-lp {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.iv-pf-lp {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+.iv-pf-lp .iv-unit {
+  margin-left: 3px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--text-3);
 }
 .iv-pf-unranked {
   color: var(--text-3);
 }
+.iv-pf-rec {
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+.iv-pf-rec b {
+  font-weight: 600;
+}
+.iv-pf-rec b.w {
+  color: var(--win);
+}
+.iv-pf-rec b.l {
+  color: var(--loss);
+}
+.iv-pf-standing {
+  color: var(--text-2);
+}
+.iv-pf-flex {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 7px;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+  border-top: 1px solid var(--line);
+}
+.iv-pf-flex .iv-crest {
+  margin-left: 2px;
+}
+.iv-pf-flex b {
+  font-weight: 600;
+}
+.iv-pf-flex > span {
+  color: var(--text-2);
+}
+/* A narrow band has no room beyond the text: no art, the light alone. */
+@container pf (max-width: 980px) {
+  .iv-pf-splash {
+    display: none;
+  }
+}
+@container pf (max-width: 560px) {
+  .iv-pf-head {
+    padding: 18px;
+  }
+  .iv-pf-who h2 {
+    font-size: 24px;
+  }
+  .iv-pf-icon,
+  .iv-pf-icon img {
+    width: 64px;
+    height: 64px;
+  }
+  .iv-pf-rank {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
 
-/* --- side panels ----------------------------------------------------------------------------------- */
+/* --- side column ----------------------------------------------------------------------------------- */
 .iv-pf-panel {
-  padding: 12px 16px 14px;
+  padding: 14px 18px 16px;
   min-width: 0;
 }
 .iv-pf-panel .iv-panel-head {
   margin-bottom: 6px;
+}
+.iv-pf-panel .iv-panel-head :is(h2, h3),
+.iv-pf-ground-head h3 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
 }
 .iv-pf-panel .iv-panel-head .iv-seg,
 .iv-pf-panel .iv-panel-head .meta {
   margin-left: auto;
 }
 
-/* LP history: one line in brand, nothing else at rest. */
+/* The summaries (champions, roles, mates, activity) sit on the page ground like invade.lol's rail:
+   a hairline above each, no sheet; their rows wash on hover. */
+.iv-pf-ground {
+  min-width: 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.iv-pf-ground-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  margin-bottom: 8px;
+}
+.iv-pf-ground-head h3 {
+  margin: 0;
+  color: var(--text-1);
+}
+.iv-pf-ground-head .meta,
+.iv-pf-ground-head .iv-seg {
+  margin-left: auto;
+}
+.iv-pf-ground-head .meta {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text-3);
+}
+
+/* A row of the summaries: a picture, a name over a meta line, one figure over its record. */
+.iv-pf-rows {
+  display: grid;
+  gap: 2px;
+  margin: 0 -8px;
+  padding: 0;
+  list-style: none;
+}
+.iv-pf-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 6px 8px;
+  font: inherit;
+  color: var(--text-1);
+  text-align: left;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background-color var(--t-fast);
+}
+.iv-pf-row:is(a, button:not(:disabled)):hover {
+  background: var(--surface-1);
+}
+.iv-pf-row.on,
+.iv-pf-row.on:hover {
+  background: rgb(var(--brand-rgb) / 0.1);
+}
+.iv-pf-row.on .iv-pf-row-t b {
+  color: var(--brand-hi);
+}
+.iv-pf-row:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+.iv-pf-pic {
+  display: block;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  background: var(--surface-3);
+  border-radius: var(--r-md);
+  box-shadow: var(--portrait-sm);
+}
+.iv-pf-pic img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.08);
+}
+.iv-pf-mates .iv-pf-pic img {
+  transform: none;
+}
+.iv-pf-row-t {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.iv-pf-row-t b {
+  overflow: hidden;
+  font-size: 13.5px;
+  font-weight: 650;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: color var(--t-fast);
+}
+.iv-pf-row-t b small {
+  margin-left: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+.iv-pf-row-t > small,
+.iv-pf-row-v small {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+.iv-pf-row-v {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  text-align: right;
+}
+.iv-pf-row-v b {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.iv-btn.iv-pf-more-rows {
+  margin: 6px 0 0 -9px;
+  color: var(--text-3);
+}
+.iv-btn.iv-pf-more-rows:hover:not(:disabled) {
+  color: var(--text-1);
+}
+.iv-btn.iv-pf-more-rows.few {
+  display: none;
+}
+
+/* LP history: the change over the period as the headline, then the line over its guides, each
+   guide named by its tier's crest and division on the left, as on invade.lol. */
 .iv-pf-lpg-read {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  min-height: 20px;
-  font-size: 13px;
-  font-weight: 500;
+  min-height: 24px;
+  margin: 2px 0 0;
   white-space: nowrap;
-  color: var(--text-2);
 }
 .iv-pf-lpg-read b {
-  font-size: 18px;
-  font-weight: 650;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
   font-variant-numeric: tabular-nums;
   color: var(--text-1);
 }
+.iv-pf-lpg-read b.up {
+  color: var(--win);
+}
+.iv-pf-lpg-read b.down {
+  color: var(--loss);
+}
+.iv-pf-lpg-read b .iv-unit {
+  margin-left: 3px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
 .iv-pf-lpg-read small {
   overflow: hidden;
-  margin-left: auto;
   font-size: 12px;
+  font-weight: 500;
   text-overflow: ellipsis;
   color: var(--text-3);
 }
+.iv-pf-lpg-chart {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 6px;
+  margin: 14px 0 10px;
+}
+.iv-pf-lpg-axis {
+  position: relative;
+}
+.iv-pf-lpg-axis span {
+  position: absolute;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  transform: translateY(-50%);
+}
+.iv-pf-lpg-axis b {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
 .iv-pf-lpg-plot {
   position: relative;
-  margin: 14px 0 6px;
+  min-width: 0;
   border-radius: var(--r-sm);
   outline: none;
+  cursor: crosshair;
 }
 .iv-pf-lpg-plot:focus-visible {
   box-shadow: 0 0 0 2px rgb(var(--brand-rgb) / 0.45);
@@ -250,178 +615,103 @@
   touch-action: pan-y;
 }
 .iv-pf-lpg-guides line {
-  stroke: var(--line);
-}
-.iv-pf-lpg-guides text {
-  font-size: 10px;
-  font-weight: 500;
-  text-anchor: end;
-  fill: var(--text-4);
-}
-@media (pointer: coarse) {
-  .iv-pf-lpg-guides text {
-    font-size: 11px;
-  }
+  stroke: var(--line-2);
+  stroke-dasharray: 3 4;
 }
 .iv-pf-lpg-line {
   fill: none;
   stroke: var(--brand);
-  stroke-width: 1.75;
+  stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 .iv-pf-lpg-cross {
-  stroke: var(--line-2);
+  stroke: var(--line-3);
 }
 .iv-pf-lpg-halo {
   fill: var(--brand);
-  opacity: 0.14;
+  opacity: 0.16;
 }
 .iv-pf-lpg-dot {
   fill: var(--brand);
+  stroke: var(--solid-1);
+  stroke-width: 2;
 }
 .iv-pf-lpg-tip {
   position: absolute;
-  top: -6px;
+  top: -10px;
   z-index: 2;
-  display: flex;
-  gap: 8px;
-  padding: 5px 9px;
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 7px 10px;
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
   color: var(--text-3);
-  background: var(--solid-1);
-  border: 1px solid var(--line-2);
+  background: var(--solid-2);
   border-radius: var(--r-sm);
-  box-shadow: var(--shadow-3);
+  box-shadow: inset 0 0 0 1px var(--line-2), var(--shadow-2);
   pointer-events: none;
 }
 .iv-pf-lpg-tip b {
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 650;
   color: var(--text-1);
 }
+.iv-pf-lpg-tip .up {
+  color: var(--win);
+}
+.iv-pf-lpg-tip .down {
+  color: var(--loss);
+}
+/* Peak and last season, a label above each value, under a hairline. */
 .iv-pf-facts {
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
   padding-top: 12px;
   border-top: 1px solid var(--line);
 }
 .iv-pf-facts > div {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.iv-pf-facts > div + div {
+  justify-items: end;
+  text-align: right;
 }
 .iv-pf-facts dt {
   font-size: 12px;
+  font-weight: 500;
   color: var(--text-3);
 }
 .iv-pf-facts dd {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12.5px;
-  color: var(--text-2);
+  min-height: 20px;
+  margin: 0;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 500;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
 }
 .iv-pf-facts dd b {
-  font-weight: 600;
+  font-weight: 650;
 }
 
-/* Champions */
+/* Champions: rows (above). In a narrow page the first three, until "Show all". */
 .iv-pf-champs {
   container-type: inline-size;
-  overflow-x: clip;
-}
-.iv-pf-table {
-  width: calc(100% + 16px);
-  margin: 0 -8px;
-  table-layout: auto;
-}
-.iv-pf-table th,
-.iv-pf-table td {
-  padding: 0 6px;
-}
-.iv-pf-table th:first-child,
-.iv-pf-table td:first-child {
-  padding-left: 8px;
-}
-.iv-pf-table th:last-child,
-.iv-pf-table td:last-child {
-  padding-right: 8px;
-}
-.iv-pf-table td {
-  height: 36px;
-  font-size: 12.5px;
-}
-.iv-pf-table td.num {
-  font-weight: 500;
-}
-.iv-pf-table tbody tr {
-  cursor: pointer;
-}
-.iv-pf-table tbody tr:focus-visible {
-  outline: none;
-  box-shadow: inset 0 0 0 2px rgb(var(--brand-rgb) / 0.55);
-}
-/* The champion column takes what the figures leave and truncates the name: the table never
-   outgrows its panel. Below that, the least useful column goes. */
-.iv-pf-table td:first-child {
-  width: 100%;
-  max-width: 0;
-}
-.iv-pf-col-cs {
-  display: none;
-}
-@container (min-width: 420px) {
-  .iv-pf-col-cs {
-    display: table-cell;
-  }
-}
-@container (max-width: 299px) {
-  .iv-pf-col-opt {
-    display: none;
-  }
-}
-.iv-pf-champ {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
-.iv-pf-champ b {
-  min-width: 0;
-  overflow: hidden;
-  max-width: 120px;
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.iv-pf-portrait {
-  flex: none;
-  width: 24px;
-  height: 24px;
-  overflow: hidden;
-  border-radius: var(--r-xs);
-  box-shadow: var(--portrait-sm);
-}
-.iv-pf-portrait img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  transform: scale(1.08);
-}
-.iv-btn.iv-pf-more-rows {
-  margin: 6px 0 0 -9px;
-}
-.iv-btn.iv-pf-more-rows.few {
-  display: none;
 }
 
-/* Roles */
+/* Roles: glyph, name, a share bar that is a well, games, share. */
 .iv-pf-roles ul {
   display: grid;
   gap: 2px;
@@ -431,31 +721,37 @@
 }
 .iv-pf-roles li button {
   display: grid;
-  grid-template-columns: 18px 58px minmax(24px, 1fr) auto 34px;
+  grid-template-columns: 18px 58px minmax(24px, 1fr) auto 36px;
   align-items: center;
   gap: 10px;
   width: 100%;
-  height: 30px;
+  height: 32px;
   padding: 0 8px;
   font: inherit;
-  font-size: 12.5px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-2);
   text-align: left;
   background: none;
   border: 0;
-  border-radius: var(--r-xs);
+  border-radius: var(--r-sm);
   cursor: pointer;
+  transition:
+    color var(--t-fast),
+    background-color var(--t-fast);
 }
 .iv-pf-roles li button:hover:not(:disabled) {
   color: var(--text-1);
-  background: var(--surface-2);
+  background: var(--surface-1);
 }
 .iv-pf-roles li button.on,
 .iv-pf-roles li button.on:hover {
   color: var(--text-1);
-  background: rgb(var(--brand-rgb) / 0.11);
-  box-shadow: none;
+  background: rgb(var(--brand-rgb) / 0.1);
+}
+.iv-pf-roles li button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
 }
 .iv-pf-roles .iv-role-icon {
   width: 16px;
@@ -463,44 +759,86 @@
   color: var(--text-3);
 }
 .iv-pf-roles button.on .iv-role-icon {
-  color: var(--text-1);
+  color: var(--brand-hi);
 }
 .iv-pf-share {
   display: block;
-  height: 4px;
+  height: 6px;
   overflow: hidden;
-  background: var(--surface-3);
-  border-radius: 2px;
+  background: var(--inset);
+  border-radius: 3px;
+  box-shadow: var(--inset-shadow);
 }
 .iv-pf-share b {
   display: block;
   height: 100%;
-  background: var(--bar);
-  border-radius: 2px;
+  background: linear-gradient(180deg, var(--brand-hi), var(--brand));
+  border-radius: 3px;
+  opacity: 0.8;
 }
 .iv-pf-roles button.on .iv-pf-share b {
-  background: var(--brand);
+  opacity: 1;
 }
 .iv-pf-role-n {
   font-size: 12px;
+  font-weight: 500;
   color: var(--text-3);
   white-space: nowrap;
 }
 .iv-pf-role-pct {
-  font-weight: 600;
+  font-weight: 700;
   text-align: right;
+  font-variant-numeric: tabular-nums;
   color: var(--text-1);
 }
 
-/* --- feed ------------------------------------------------------------------------------------------ */
-.iv-pf-bar,
-.iv-pf-sum {
+/* --- feed ------------------------------------------------------------------------------------------
+   As on invade.lol: a title with one summary line and the form, the filters (inset wells with a
+   raised key), then the days. */
+.iv-pf-feed-head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 6px 16px;
+  min-height: 28px;
+  margin: 0 2px 12px;
 }
-.iv-pf-feed > .iv-pf-bar {
+.iv-pf-feed-head h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+}
+.iv-pf-sum-figs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+.iv-pf-sum-figs b {
+  margin-right: 1px;
+  font-weight: 650;
+  color: var(--text-1);
+}
+.iv-pf-sum-figs b.w {
+  color: var(--win);
+}
+.iv-pf-sum-figs b.l {
+  color: var(--loss);
+}
+.iv-pf-form {
+  margin-left: auto;
+}
+.iv-pf-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
+  margin-bottom: 18px;
 }
 .iv-pf-feed > .iv-pf-bar .iv-seg {
   flex-wrap: nowrap;
@@ -521,36 +859,17 @@ select.iv-select.iv-pf-select {
   max-width: 200px;
   font-size: 12.5px;
 }
-select.iv-select.iv-pf-order {
+.iv-pf-bar > select.iv-select.iv-pf-select:not(.iv-pf-order) {
   margin-left: auto;
 }
-
-.iv-pf-sum {
-  gap: 10px 18px;
-  margin: 14px 2px 16px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-3);
-}
-.iv-pf-sum-figs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 18px;
-}
-.iv-pf-sum-figs b {
-  margin-right: 2px;
+.iv-pf-day .iv-mr-day {
+  margin: 0 2px 8px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 650;
   color: var(--text-1);
 }
-.iv-pf-form {
-  margin-left: auto;
-}
-.iv-btn.iv-pf-clear {
-  margin: -4px -6px -4px 0;
-}
-.iv-pf-form + .iv-btn.iv-pf-clear {
-  margin-left: 0;
+.iv-pf-day .iv-mr-day span {
+  font-size: 12px;
 }
 
 .iv-pf-state {
@@ -601,7 +920,7 @@ select.iv-select.iv-pf-order {
   background: var(--line);
 }
 .iv-pf-day + .iv-pf-day {
-  margin-top: 20px;
+  margin-top: 22px;
 }
 .iv-pf-match {
   scroll-margin-top: 12px;
@@ -648,72 +967,4 @@ select.iv-select.iv-pf-order {
 }
 .iv-pf-feed-skel {
   padding-top: 14px;
-}
-
-/* Played with: the people this player queues with. */
-.iv-pf-mates ul {
-  display: grid;
-  gap: 2px;
-  margin: 0 -8px;
-  padding: 0;
-  list-style: none;
-}
-.iv-pf-mates li > * {
-  display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  min-height: 44px;
-  padding: 6px 8px;
-  font: inherit;
-  color: var(--text-1);
-  text-align: left;
-  background: none;
-  border: 0;
-  border-radius: var(--r-sm);
-  text-decoration: none;
-  cursor: pointer;
-  transition: background-color var(--t-fast);
-}
-.iv-pf-mates li > :is(a, button:not(:disabled)):hover {
-  background: var(--surface-2);
-}
-.iv-pf-mates img {
-  width: 30px;
-  height: 30px;
-  border-radius: var(--r-sm);
-  object-fit: cover;
-}
-.iv-pf-mate-who {
-  display: grid;
-  gap: 1px;
-  min-width: 0;
-}
-.iv-pf-mate-who b {
-  overflow: hidden;
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.iv-pf-mate-who b small {
-  margin-left: 1px;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-3);
-}
-.iv-pf-mate-who > small,
-.iv-pf-mate-wr small {
-  font-size: 11.5px;
-  color: var(--text-3);
-}
-.iv-pf-mate-wr {
-  display: grid;
-  justify-items: end;
-  gap: 1px;
-}
-.iv-pf-mate-wr b {
-  font-size: 13px;
-  font-weight: 600;
 }

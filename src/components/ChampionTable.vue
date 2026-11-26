@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { computed, shallowRef } from 'vue'
 import { useFormat, useInvadeUi, useNames } from '../context'
+import { count } from '../logic/labels'
 import type { MatchSummary, ProfileView, ScoreRow } from '../logic/types'
 import '../styles/base.css'
 import '../styles/primitives.css'
 import '../styles/profile.css'
 
 /**
- * Champions over the loaded games (most played first), and the account's mastery as a second
- * view of the same panel. A row filters the feed to that champion; the selected one is lit.
+ * Champions over the loaded games (most played first), and the account's mastery as a second view
+ * of the same section. On the page ground like invade.lol's rail: a row per champion with its
+ * picture, a meta line (games, KDA, average Invade score) and its win rate. A row filters the feed
+ * to that champion; the selected one is lit.
  */
 const props = defineProps<{ profile: ProfileView; games: MatchSummary[]; scores: ReadonlyMap<number, ScoreRow> }>()
 const champion = defineModel<number>('champion', { required: true })
@@ -52,8 +55,8 @@ const pick = (id: number) => (champion.value = champion.value === id ? 0 : id)
 </script>
 
 <template>
-  <section v-if="profile.champions.length || profile.card.mastery.length" class="iv-panel iv-pf-panel iv-pf-champs" :class="{ all }">
-    <header class="iv-panel-head">
+  <section v-if="profile.champions.length || profile.card.mastery.length" class="iv-pf-ground iv-pf-champs" :class="{ all }">
+    <header class="iv-pf-ground-head">
       <h3>{{ t('Champions') }}</h3>
       <div v-if="profile.card.mastery.length && profile.champions.length" class="iv-seg sm">
         <button type="button" :class="{ on: view === 'recent' }" @click="view = 'recent'">{{ t('Recent') }}</button>
@@ -62,77 +65,37 @@ const pick = (id: number) => (champion.value = champion.value === id ? 0 : id)
       <span v-else-if="view === 'mastery'" class="meta">{{ t('Mastery') }}</span>
     </header>
 
-    <template v-if="view === 'recent'">
-      <table class="iv-table iv-pf-table">
-        <thead>
-          <tr>
-            <th>{{ t('Champion') }}</th>
-            <th class="num">{{ t('Games') }}</th>
-            <th class="num">{{ t('Win') }}</th>
-            <th class="num iv-pf-col-opt">{{ t('KDA') }}</th>
-            <th class="num iv-pf-col-cs">{{ t('CS/min') }}</th>
-            <th class="num" :title="t('Average Invade score')">{{ t('Score') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="r in shownRows"
-            :key="r.id"
-            :class="{ self: champion === r.id }"
-            :title="t('Show only {champion} games', { champion: champName(r.id) })"
-            tabindex="0"
-            @click="pick(r.id)"
-            @keydown.enter.prevent="pick(r.id)"
-          >
-            <td>
-              <span class="iv-pf-champ">
-                <span class="iv-pf-portrait"><img :src="champIcon(r.id)" alt="" /></span>
-                <b>{{ champName(r.id) }}</b>
-              </span>
-            </td>
-            <td class="num">{{ r.games }}</td>
-            <td class="num" :title="t('{w}W {l}L', { w: r.wins, l: r.games - r.wins })">{{ pct(r.wr) }}</td>
-            <td class="num iv-pf-col-opt" :title="r.avg">{{ r.kda }}</td>
-            <td class="num iv-pf-col-cs">{{ num(r.csMin, 1) }}</td>
-            <td class="num">
-              <template v-if="r.score !== null">{{ r.score }}</template>
-              <span v-else class="iv-pf-dim">–</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </template>
+    <ul v-if="view === 'recent'" class="iv-pf-rows">
+      <li v-for="r in shownRows" :key="r.id">
+        <button type="button" class="iv-pf-row" :class="{ on: champion === r.id }" :aria-pressed="champion === r.id" :title="t('Show only {champion} games', { champion: champName(r.id) })" @click="pick(r.id)">
+          <span class="iv-pf-pic"><img :src="champIcon(r.id)" alt="" loading="lazy" /></span>
+          <span class="iv-pf-row-t">
+            <b>{{ champName(r.id) }}</b>
+            <small :title="r.avg">{{ count(r.games, 'games', t) }} · {{ r.kda }} {{ t('KDA') }}<template v-if="r.score !== null"> · {{ t('score {s}', { s: r.score }) }}</template></small>
+          </span>
+          <span class="iv-pf-row-v">
+            <b>{{ pct(r.wr) }}</b>
+            <small>{{ t('{w}W {l}L', { w: r.wins, l: r.games - r.wins }) }}</small>
+          </span>
+        </button>
+      </li>
+    </ul>
 
-    <table v-else class="iv-table iv-pf-table">
-      <thead>
-        <tr>
-          <th>{{ t('Champion') }}</th>
-          <th class="num iv-pf-col-opt">{{ t('Level') }}</th>
-          <th class="num">{{ t('Points') }}</th>
-          <th class="num">{{ t('Last played') }}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="m in mastery"
-          :key="m.championId"
-          :class="{ self: champion === m.championId }"
-          tabindex="0"
-          @click="pick(m.championId)"
-          @keydown.enter.prevent="pick(m.championId)"
-        >
-          <td>
-            <span class="iv-pf-champ">
-              <span class="iv-pf-portrait"><img :src="champIcon(m.championId)" alt="" /></span>
-              <b>{{ champName(m.championId) }}</b>
-            </span>
-          </td>
-          <td class="num iv-pf-col-opt">{{ m.championLevel }}</td>
-          <td class="num">{{ compact(m.championPoints) }}</td>
-          <td class="num iv-pf-dim2">{{ m.lastPlayTime ? ago(m.lastPlayTime) : '–' }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <ul v-else class="iv-pf-rows">
+      <li v-for="m in mastery" :key="m.championId">
+        <button type="button" class="iv-pf-row" :class="{ on: champion === m.championId }" :aria-pressed="champion === m.championId" :title="t('Show only {champion} games', { champion: champName(m.championId) })" @click="pick(m.championId)">
+          <span class="iv-pf-pic"><img :src="champIcon(m.championId)" alt="" loading="lazy" /></span>
+          <span class="iv-pf-row-t">
+            <b>{{ champName(m.championId) }}</b>
+            <small>{{ t('Level {n}', { n: m.championLevel }) }}<template v-if="m.lastPlayTime"> · {{ ago(m.lastPlayTime) }}</template></small>
+          </span>
+          <span class="iv-pf-row-v">
+            <b>{{ compact(m.championPoints) }}</b>
+            <small>{{ t('pts') }}</small>
+          </span>
+        </button>
+      </li>
+    </ul>
 
     <button v-if="total > 3" type="button" class="iv-btn ghost sm iv-pf-more-rows" :class="{ few: total <= LIMIT }" @click="all = !all">
       {{ all ? t('Show less') : t('Show all {n}', { n: total }) }}
