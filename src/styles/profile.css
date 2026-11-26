@@ -162,7 +162,7 @@
   gap: 5px;
   min-width: 0;
   margin: 0;
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -931,12 +931,12 @@ select.iv-select.iv-pf-select {
 
 /* --- loading --------------------------------------------------------------------------------------- */
 .iv-pf-head-skel {
-  gap: 16px;
+  gap: 20px;
 }
 .iv-pf-skel-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: var(--r-md);
+  width: 80px;
+  height: 80px;
+  border-radius: var(--r-lg);
 }
 .iv-pf-skel-lines {
   display: grid;
@@ -944,12 +944,19 @@ select.iv-select.iv-pf-select {
 }
 .iv-pf-skel-ranks {
   display: flex;
-  gap: 32px;
-  margin-left: auto;
+  gap: 16px;
+  margin-left: 12px;
+  padding-left: 32px;
+  border-left: 1px solid var(--line);
 }
-.iv-pf-skel-ranks .iv-skel {
-  width: 168px;
-  height: 40px;
+.iv-pf-skel-ranks .iv-skel:first-child {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--r-lg);
+}
+.iv-pf-skel-ranks .iv-skel:last-child {
+  width: 200px;
+  height: 64px;
 }
 .iv-pf-skel-panel {
   border-radius: var(--r-md);
@@ -957,7 +964,7 @@ select.iv-select.iv-pf-select {
 .iv-pf-skel-bar {
   width: min(560px, 80%);
   height: 30px;
-  margin-bottom: 62px;
+  margin: 40px 0 30px;
 }
 .iv-pf-skel-day {
   display: block;

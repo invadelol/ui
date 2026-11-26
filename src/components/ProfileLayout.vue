@@ -18,7 +18,7 @@ defineProps<{ loading?: boolean }>()
     <template v-if="loading">
       <div class="iv-pf-head iv-pf-head-skel" aria-busy="true">
         <span class="iv-skel iv-pf-skel-icon" />
-        <span class="iv-pf-skel-lines"><span class="iv-skel" style="width: 180px; height: 18px" /><span class="iv-skel" style="width: 120px; height: 11px" /></span>
+        <span class="iv-pf-skel-lines"><span class="iv-skel" style="width: 200px; height: 26px" /><span class="iv-skel" style="width: 120px; height: 20px" /><span class="iv-skel" style="width: 140px; height: 11px" /></span>
         <span class="iv-pf-skel-ranks"><span class="iv-skel" /><span class="iv-skel" /></span>
       </div>
       <div class="iv-pf-cols">
