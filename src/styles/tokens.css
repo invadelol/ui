@@ -172,6 +172,10 @@
   --score-gold-rgb: 236 193 106;
   --score-peak-rgb: 252 216 136;
   --score-glow: 0.55;
+  /* ACE (the best player of the losing team): a calm leaf green, free in a blue/red system and
+     clear of the emerald tier's bluer green. Only the ACE tag. */
+  --ace: #62c977;
+  --ace-rgb: 98 201 119;
   --warn: #ffb547;
 
   /* Rank tiers: rank names and crests only. */

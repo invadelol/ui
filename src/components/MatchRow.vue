@@ -609,6 +609,9 @@ const favorite = computed(() => (ui.favorites && props.puuid ? gameFavorite(prop
 .iv-mr.compact .iv-mr-place.mvp {
   color: var(--gold-c);
 }
+.iv-mr.compact .iv-mr-place.ace {
+  color: var(--ace);
+}
 @container mr (min-width: 480px) {
   .iv-mr.compact .iv-mr-grid {
     grid-template-columns: 32px minmax(0, 1.2fr) minmax(0, 1fr) 72px;

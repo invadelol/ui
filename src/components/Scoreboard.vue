@@ -204,8 +204,8 @@ const target = (p: PlayerView): LinkTarget | null =>
             </td>
             <td class="num iv-sb-score">
               <span v-if="p.score !== null" class="iv-sb-perf">
-                <span v-if="p.badges.includes('mvp')" class="iv-badge brand" :title="t(BADGES.mvp.tip)">{{ t('MVP') }}</span>
-                <span v-else-if="p.badges.includes('ace')" class="iv-badge" :title="t(BADGES.ace.tip)">{{ t('ACE') }}</span>
+                <span v-if="p.badges.includes('mvp')" class="iv-badge gold" :title="t(BADGES.mvp.tip)">{{ t('MVP') }}</span>
+                <span v-else-if="p.badges.includes('ace')" class="iv-badge ace" :title="t(BADGES.ace.tip)">{{ t('ACE') }}</span>
                 <small v-else>{{ ordinal(p.rank) }}</small>
                 <PerfDial :score="score100(p.score)" :rank="p.rank" size="sm" />
               </span>

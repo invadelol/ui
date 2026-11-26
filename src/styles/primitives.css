@@ -338,6 +338,10 @@
   color: var(--gold-c);
   background: rgb(var(--gold-rgb) / 0.12);
 }
+.iv-badge.ace {
+  color: var(--ace);
+  background: rgb(var(--ace-rgb) / 0.12);
+}
 .iv-badge.win {
   color: var(--win);
   background: rgb(var(--win-rgb) / 0.12);
