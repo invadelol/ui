@@ -27,11 +27,24 @@
 .iv-pf-feed {
   min-width: 0;
 }
-/* Narrow (under ~830px left for the feed, its filter bar would wrap and its rows squeeze): the feed
-   takes the whole width and the side panels go above it, paired in a grid in their order of
-   priority. A row's panels share its height (one top, one bottom edge: no holes), and an odd count
-   lets the first one take a whole row. Kept short so the games stay near the top (three champions until "Show all"). */
+/* Narrower (the app's default 1320 px window and below): the side column slims to 300px and keeps
+   its place beside the feed, so the games stay on the first screen; the champions list keeps three
+   until "Show all". The feed's rows and Performance fold on their own at these widths. */
 @container pf (max-width: 1180px) {
+  .iv-pf-cols {
+    grid-template-columns: 300px minmax(0, 1fr);
+  }
+  .iv-pf-champs:not(.all) .iv-pf-rows > li:nth-child(n + 4) {
+    display: none;
+  }
+  .iv-pf-champs .iv-btn.iv-pf-more-rows.few {
+    display: inline-flex;
+  }
+}
+/* Narrow (under ~520px left for the feed): the feed takes the whole width and the side panels go
+   above it, paired in a grid in their order of priority. A row's panels share its height (one top,
+   one bottom edge: no holes), and an odd count lets the first one take a whole row. */
+@container pf (max-width: 820px) {
   .iv-pf-cols {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -40,12 +53,6 @@
   }
   .iv-pf-side > :first-child:nth-last-child(odd) {
     grid-column: 1 / -1;
-  }
-  .iv-pf-champs:not(.all) .iv-pf-rows > li:nth-child(n + 4) {
-    display: none;
-  }
-  .iv-pf-champs .iv-btn.iv-pf-more-rows.few {
-    display: inline-flex;
   }
 }
 /* Phone (one column): the games first, the tendencies after them, so the feed is not pushed off the

@@ -6,7 +6,7 @@ import '../styles/profile.css'
 
 /**
  * The profile page's frame: the header band on top, then the side panels beside the feed (the
- * feed is the page's subject). Narrow: the side panels go above the feed, paired in a grid.
+ * feed is the page's subject). The side column slims under 1180px and only goes above the feed, paired in a grid, under 820px.
  * Without side panels the content takes the whole width (another section of the profile).
  * Pass `loading` for the page's own loading shapes instead of the slots.
  */
