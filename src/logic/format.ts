@@ -58,11 +58,12 @@ export const signedLp = (n: number) => `${n > 0 ? '+' : n < 0 ? '−' : '±'}${M
 
 /** "3 days ago", "2 h ago"… from an epoch-millisecond time. */
 export function ago(ms: number, locale = 'en'): string {
-  const s = (ms - Date.now()) / 1000
+  // Always in the past: a clock a little ahead of ours must not read "in 1 min.".
+  const s = Math.min(0, (ms - Date.now()) / 1000)
   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' })
   const a = Math.abs(s)
   // Under a minute reads "1 min. ago", never "this minute" (numeric: 'auto' for 0).
-  if (a < 3600) return rtf.format(s < 0 ? Math.min(-1, Math.round(s / 60)) : Math.max(1, Math.round(s / 60)), 'minute')
+  if (a < 3600) return rtf.format(Math.min(-1, Math.round(s / 60)), 'minute')
   if (a < 86400) return rtf.format(Math.round(s / 3600), 'hour')
   if (a < 86400 * 30) return rtf.format(Math.round(s / 86400), 'day')
   return rtf.format(Math.round(s / (86400 * 30)), 'month')
