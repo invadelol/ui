@@ -61,7 +61,8 @@ export function ago(ms: number, locale = 'en'): string {
   const s = (ms - Date.now()) / 1000
   const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto', style: 'short' })
   const a = Math.abs(s)
-  if (a < 3600) return rtf.format(Math.round(s / 60), 'minute')
+  // Under a minute reads "1 min. ago", never "this minute" (numeric: 'auto' for 0).
+  if (a < 3600) return rtf.format(s < 0 ? Math.min(-1, Math.round(s / 60)) : Math.max(1, Math.round(s / 60)), 'minute')
   if (a < 86400) return rtf.format(Math.round(s / 3600), 'hour')
   if (a < 86400 * 30) return rtf.format(Math.round(s / 86400), 'day')
   return rtf.format(Math.round(s / (86400 * 30)), 'month')

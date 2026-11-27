@@ -121,7 +121,8 @@ const geo = computed(() => {
   for (let v = 0; v <= hi + 1e-9; v += step) yTicks.push({ y: y(v), label: v ? tick(v) : '0' })
   const every = tmax > 2700 ? 600 : 300
   const xTicks: { x: number; label: string }[] = []
-  for (let s = every; s < tmax - every / 3; s += every) xTicks.push({ x: x(s), label: mmss(s) })
+  // A tick keeps clear of the end time's label (drawn apart, right-aligned at the end): ~44px.
+  for (let s = every; s < tmax - every / 3 && x(tmax) - x(s) >= 44; s += every) xTicks.push({ x: x(s), label: mmss(s) })
 
   const paths = series.value.map((row) => {
     let d = ''
